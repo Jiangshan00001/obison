@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+qt_build/*
+tmp/*
+*.bak

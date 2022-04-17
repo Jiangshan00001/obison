@@ -1,0 +1,163 @@
+Rules useless in parser due to conflicts
+
+    7 B: d
+
+
+State 2 conflicts: 2 reduce/reduce
+
+
+Grammar
+
+    0 $accept: SS $end
+
+    1 SS: S
+
+    2 S: A a
+    3  | b A c
+    4  | B c
+    5  | b B a
+
+    6 A: d
+
+    7 B: d
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    a (258) 2 5
+    b (259) 3 5
+    c (260) 3 4
+    d (261) 6 7
+
+
+Nonterminals, with rules where they appear
+
+    $accept (7)
+        on left: 0
+    SS (8)
+        on left: 1
+        on right: 0
+    S (9)
+        on left: 2 3 4 5
+        on right: 1
+    A (10)
+        on left: 6
+        on right: 2 3
+    B (11)
+        on left: 7
+        on right: 4 5
+
+
+State 0
+
+    0 $accept: • SS $end
+
+    b  shift, and go to state 1
+    d  shift, and go to state 2
+
+    SS  go to state 3
+    S   go to state 4
+    A   go to state 5
+    B   go to state 6
+
+
+State 1
+
+    3 S: b • A c
+    5  | b • B a
+
+    d  shift, and go to state 2
+
+    A  go to state 7
+    B  go to state 8
+
+
+State 2
+
+    6 A: d •
+    7 B: d •
+
+    a         reduce using rule 6 (A)
+    a         [reduce using rule 7 (B)]
+    c         reduce using rule 6 (A)
+    c         [reduce using rule 7 (B)]
+    $default  reduce using rule 6 (A)
+
+
+State 3
+
+    0 $accept: SS • $end
+
+    $end  shift, and go to state 9
+
+
+State 4
+
+    1 SS: S •
+
+    $default  reduce using rule 1 (SS)
+
+
+State 5
+
+    2 S: A • a
+
+    a  shift, and go to state 10
+
+
+State 6
+
+    4 S: B • c
+
+    c  shift, and go to state 11
+
+
+State 7
+
+    3 S: b A • c
+
+    c  shift, and go to state 12
+
+
+State 8
+
+    5 S: b B • a
+
+    a  shift, and go to state 13
+
+
+State 9
+
+    0 $accept: SS $end •
+
+    $default  accept
+
+
+State 10
+
+    2 S: A a •
+
+    $default  reduce using rule 2 (S)
+
+
+State 11
+
+    4 S: B c •
+
+    $default  reduce using rule 4 (S)
+
+
+State 12
+
+    3 S: b A c •
+
+    $default  reduce using rule 3 (S)
+
+
+State 13
+
+    5 S: b B a •
+
+    $default  reduce using rule 5 (S)
