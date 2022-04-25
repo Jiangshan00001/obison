@@ -6,6 +6,14 @@
 #include <set>
 #include <map>
 
+enum action_type{
+    E_ACTION_NULL=0,
+    E_ACTION_JMP=1,
+    E_ACTION_REDUCE=2,
+    E_ACTION_ACCEPT=3,
+};
+
+
 class min_state
 {
 public:
@@ -29,14 +37,41 @@ public:
 
         return false;
         }
+
+    bool operator == (const min_state&p2) const{
+        const min_state &p1= *this;
+        if(p1.m_rule!=p2.m_rule)
+            return false;
+        if(p1.m_curr_dot_index!=p2.m_curr_dot_index)
+            return false;
+
+        if(p1.m_next!=p2.m_next)
+            return false;
+
+        return true;
+    }
+
 };
 
+
+#define START_SYM "start_20220422_start"
+#define EOF_SYM "EOF_20220422_EOF"
+
+///TODO: 暂未解决空字符问题
+/// 添加 START_20220422_START --6000 对应起始符号
+/// 添加 EPS_20220422_EPS --6001 对应空字符？
+/// 添加 END_20220422_END --6002 对应结束字符
+///
 class lalr1
 {
 public:
     lalr1();
 
+
     int generate_table(class bison_file_io* file_in);
+    std::string get_def_file(std::string namespace_to_add="");
+    std::string get_parser_file();
+
 
 
     ///语法规则。1个规则有多行，1行里有多列
@@ -70,6 +105,7 @@ private:
     int generate_first();
     int generate_follow();
     int generate_closures(std::string mstart);
+    int patch_accept(std::string mstart);
     std::string print_rules();
     std::string print_term_vals();
     std::string print_first();
@@ -92,6 +128,7 @@ private:
     ///
     std::vector< std::map<std::string, int > > m_jmp;
     std::vector< std::map<std::string, int > > m_reduce;
+    std::vector<int> m_is_accpetable;
 
 
 };

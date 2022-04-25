@@ -1,0 +1,102 @@
+[启动 LR(1)分析]
+[输入文法]
+S'->S
+S->Aa
+S->bAc
+S->Bc
+S->bBa
+A->d
+B->d
+[FIRST集]
+FIRST(A)={d}
+FIRST(B)={d}
+FIRST(S)={b,d}
+FIRST(S')={b,d}
+FOLLOW集]
+FOLLOW(A)={#,a,c}
+FOLLOW(B)={#,a,c}
+FOLLOW(S)={#}
+FOLLOW(S')={#}
+CLOSURE]
+closure-I0:
+A->.d, a
+B->.d, c
+S->.Aa, #
+S->.Bc, #
+S->.bAc, #
+S->.bBa, #
+S'->.S, #
+
+closure-I1:
+S->A.a, #
+
+closure-I2:
+S->B.c, #
+
+closure-I3:
+S'->S., #
+
+closure-I4:
+A->.d, c
+B->.d, a
+S->b.Ac, #
+S->b.Ba, #
+
+closure-I5:
+A->d., a
+B->d., c
+
+closure-I6:
+S->Aa., #
+
+closure-I7:
+S->Bc., #
+
+closure-I8:
+S->bA.c, #
+
+closure-I9:
+S->bB.a, #
+
+closure-I10:
+A->d., c
+B->d., a
+
+closure-I11:
+S->bAc., #
+
+closure-I12:
+S->bBa., #
+
+EDGE]
+I0->A->I1
+I0->B->I2
+I0->S->I3
+I0->b->I4
+I0->d->I5
+I1->a->I6
+I2->c->I7
+I4->A->I8
+I4->B->I9
+I4->d->I10
+I8->c->I11
+I9->a->I12
+LR(1)分析表]
+         |    '    |    A    |    B    |    S    |    a    |    b    |    c    |    d    |    #    |
+----------------------------------------------------------------------------------------------------
+    0    |         |    1    |    2    |    3    |         |     S4  |         |     S5  |         |
+    1    |         |         |         |         |     S6  |         |         |         |         |
+    2    |         |         |         |         |         |         |     S7  |         |         |
+    3    |         |         |         |         |         |         |         |         |    acc  |
+    4    |         |    8    |    9    |         |         |         |         |    S10  |         |
+    5    |         |         |         |         |     R6  |         |     R7  |         |         |
+    6    |         |         |         |         |         |         |         |         |     R2  |
+    7    |         |         |         |         |         |         |         |         |     R4  |
+    8    |         |         |         |         |         |         |    S11  |         |         |
+    9    |         |         |         |         |    S12  |         |         |         |         |
+   10    |         |         |         |         |     R7  |         |     R6  |         |         |
+   11    |         |         |         |         |         |         |         |         |     R3  |
+   12    |         |         |         |         |         |         |         |         |     R5  |
+----------------------------------------------------------------------------------------------------
+过程分析]
+          steps|       op-stack          input           operation|    state-stack         ACTION           GOTO

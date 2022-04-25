@@ -1,9 +1,11 @@
+#include <assert.h>
 #include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <set>
 #include "lalr1.h"
 #include "bison_file_io.h"
+#include "string_eval.h"
 
 using namespace std;
 
@@ -16,8 +18,17 @@ int lalr1::generate_table(bison_file_io *file_in)
 {
     if(file_in==nullptr)return -1;
 
+    {
+        ///添加起始规则
+        std::vector<std::string> one_rule;
+        one_rule.push_back(START_SYM);
+        one_rule.push_back(file_in->m_start);
+        one_rule.push_back(EOF_SYM);
+        this->m_rules.push_back(one_rule);
+    }
+
     //规则格式转换
-    for(int i=0;i<file_in->m_rules.size();++i)
+    for(unsigned i=0;i<file_in->m_rules.size();++i)
     {
         if(file_in->m_rules[i].size()==0)continue;
         std::string left = file_in->m_rules[i][0][0];
@@ -43,7 +54,8 @@ int lalr1::generate_table(bison_file_io *file_in)
      generate_follow();
      std::cout<<print_follow();
      
-     generate_closures(file_in->m_start);
+     generate_closures(START_SYM);
+     patch_accept(START_SYM);
      std::cout<<print_closures();
      
      std::cout<<print_jmp_table();
@@ -91,6 +103,178 @@ int lalr1::generate_table(bison_file_io *file_in)
 
 }
 
+string lalr1::get_def_file(std::string namespace_to_add)
+{
+    stringstream ss;
+    if(!namespace_to_add.empty())
+    {
+        ss<<"namespace "<<namespace_to_add<<"{\n";
+    }
+    ss<<"enum e_bison_head{\n";
+    for(auto it=m_aterm_nval.begin();it!=m_aterm_nval.end();++it)
+    {
+        if (it->second[0]=='\'')
+        {
+            ss<<"//";
+        }
+        ss<<""<< it->second<<"=" << it->first<<",\n";
+    }
+    ss<<"};\n";
+
+    if(!namespace_to_add.empty())
+    {
+        ss<<"};//namespace "<<namespace_to_add<<"\n";
+    }
+
+    return ss.str();
+
+}
+
+string lalr1::get_parser_file()
+{
+    stringstream ss;
+
+    ss<<"std::vector< std::vector<std::string > > m_rules={\n";
+    for(unsigned i=0;i<m_rules.size();++i)
+    {
+        ss<<"{";
+        for(unsigned j=0;j<m_rules[i].size();++j)
+        {
+            if (j!=0)ss<<",";
+            ss<<"\""<<string_pack(m_rules[i][j]) << "\"";
+        }
+        ss<<"},\n";
+    }
+    ss<<"};\n";
+
+    ss<<"std::vector< int > m_rule_reduce_ret={";
+    for(unsigned i=0;i<m_rules.size();++i)
+    {
+        if (i!=0)ss<<",";
+        for(unsigned j=0;j<m_rules[i].size();++j)
+        {
+            ss<<m_aterm_val[m_rules[i][0]];
+            break;
+        }
+    }
+    ss<<"};\n";
+
+
+
+    ss<<print_closures();
+    ss<<"\n";
+    ss<<print_jmp_table();
+    ss<<"\n";
+
+    ///每个token对应的action表列号
+    //m_aterm_nval
+
+    //生成action/goto表
+    std::vector< std::vector<int> > m_action_id;
+    std::vector< std::vector<int> > m_action_type;//0--无 1--jmp 2--
+
+    std::vector<int> aterm_val;
+    for(auto it=m_aterm_nval.begin();it!=m_aterm_nval.end();++it)
+    {
+        aterm_val.push_back(it->first);
+    }
+
+    ss<<"std::vector<int> m_char_vec={\n";
+    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
+    {
+        ss<< aterm_val[char_idx]<<",";
+    }
+    ss<<"};\n";
+    ss<<"std::vector<std::string> m_char_str_vec={\n";
+    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
+    {
+        ss<<"\""<< string_pack( m_aterm_nval[aterm_val[char_idx] ] )<<"\",";
+    }
+    ss<<"};\n";
+
+
+
+    ss<<"std::map<int, int>  m_token_index={\n";
+    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
+    {
+        ss<<"{"<<aterm_val[char_idx]<<", " << char_idx<<"},\n";
+    }
+    ss<<"};\n";
+
+
+
+
+    for(unsigned state_idx=0;state_idx<m_closures.size();++state_idx)
+    {
+        vector<int> id_vec;
+        vector<int> type_vec;
+        for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
+        {
+            assert(m_jmp.size()>state_idx);
+            std::string jmp_term = m_aterm_nval[aterm_val[char_idx]];
+            if(m_is_accpetable[state_idx])
+            {
+                type_vec.push_back(E_ACTION_ACCEPT);
+                id_vec.push_back(-1);
+            }
+            else if(m_jmp[state_idx].find(jmp_term)!=m_jmp[state_idx].end())
+            {
+                ///有跳转
+                type_vec.push_back(E_ACTION_JMP);
+                id_vec.push_back(m_jmp[state_idx][jmp_term]);
+            }
+            else if(m_reduce[state_idx].find(jmp_term)!=m_reduce[state_idx].end())
+            {
+                ///有规约
+                type_vec.push_back(E_ACTION_REDUCE);
+                id_vec.push_back(m_reduce[state_idx][jmp_term]);
+            }
+            else
+            {
+                type_vec.push_back(E_ACTION_NULL);
+                id_vec.push_back(-1);
+            }
+
+
+        }
+        m_action_id.push_back(id_vec);
+        m_action_type.push_back(type_vec);
+    }
+
+    ss << "int m_action_id["<< m_closures.size()<< "][" << m_aterm_nval.size()<<  "]={\n";
+    ///每个状态的跳转表
+    ///
+    for(unsigned i=0;i<m_action_id.size();++i)
+    {
+        ss<<"{";
+        for(unsigned j=0;j<m_action_id[i].size();++j)
+        {
+            if(j>0)ss<<",";
+            ss<<m_action_id[i][j]<<" ";
+        }
+        ss<<"},\n";
+    }
+    ss<<"};\n";
+
+    ss << "int m_action_type["<< m_closures.size()<< "][" << m_aterm_nval.size()<<  "]={\n";
+    ///每个状态的跳转表
+    ///
+    for(unsigned i=0;i<m_action_type.size();++i)
+    {
+        ss<<"{";
+        for(unsigned j=0;j<m_action_type[i].size();++j)
+        {
+            if(j>0)ss<<",";
+            ss<<m_action_type[i][j]<<" ";
+        }
+        ss<<"},\n";
+    }
+    ss<<"};\n";
+
+
+    return ss.str();
+}
+
 int lalr1::generate_terms(     const std::vector<std::string> &mtokens,
 const std::vector<std::string> &mleft,
 const std::vector<std::string> &mright)
@@ -101,6 +285,12 @@ const std::vector<std::string> &mright)
 
     std::stringstream iss;
 
+    ///文件结束终结符。自动添加
+    ///
+    m_terms.push_back(EOF_SYM);
+
+    /// add terms first
+    ///
     for(unsigned i=0;i<mtokens.size();++i)
     {
         m_terms.push_back(mtokens[i]);
@@ -118,13 +308,18 @@ const std::vector<std::string> &mright)
         for(unsigned j=0;j<m_rules[i].size();j++)
         {
                 std::string rule_tk = m_rules[i][j];
-                if ((rule_tk.size()==3) &&(rule_tk[0]=='\'')&&(rule_tk[2]=='\''))
+                if (((rule_tk.size()==3) &&(rule_tk[0]=='\'')&&(rule_tk[2]=='\''))||
+                        ((rule_tk.size()==4) &&(rule_tk[0]=='\'')&&(rule_tk[3]=='\'')&&(rule_tk[1]=='\\'))
+                        )
                 {
                     m_terms.push_back(rule_tk);
                 }
         }
     }
 
+    ///others that are not term are nterms
+    ///
+    ///
     std::set<std::string> nterms_set;
     for(unsigned i=0;i<m_rules.size();++i)
     {
@@ -139,7 +334,7 @@ const std::vector<std::string> &mright)
     }
     m_nterms.assign(nterms_set.begin(), nterms_set.end());
 
-
+    /// add value of the terms/nterms
     int val=256;
     for(unsigned i=0;i<m_terms.size();++i)
     {
@@ -148,6 +343,18 @@ const std::vector<std::string> &mright)
         if((t.size()==3)&&(t[0]=='\'')&&(t[2]=='\''))
         {
             v = t[1];
+        }
+        else if((t.size()==4)&&(t[0]=='\'')&&(t[3]=='\'')&&(t[1]=='\\')&&(t[2]=='n'))
+        {
+            v = '\n';///FIXME: 此处只处理了\n. 还有其他字符未处理
+        }
+        else if((t.size()==4)&&(t[0]=='\'')&&(t[3]=='\'')&&(t[1]=='\\')&&(t[2]=='t'))
+        {
+            v = '\t';///FIXME: 此处只处理了\n. 还有其他字符未处理
+        }
+        else if((t.size()==4)&&(t[0]=='\'')&&(t[3]=='\'')&&(t[1]=='\\')&&(t[2]=='v'))
+        {
+            v = '\v';///FIXME: 此处只处理了\n. 还有其他字符未处理
         }
         else
         {
@@ -192,6 +399,12 @@ int lalr1::generate_first()
         for(unsigned i=0;i<m_rules.size();++i)
         {
             std::string left = m_rules[i][0];
+            
+            if (m_rules[i].size() < 2) {
+                /// 空规则。first集如何处理？？？FIXME:
+                continue;
+            }
+
             std::string right_first = m_rules[i][1];
             std::set<std::string> &fset = m_first[left];
             if(is_nterm(right_first))
@@ -280,11 +493,21 @@ int lalr1::generate_closures(std::string mstart)
             int ret = get_closure_next_token(onec,shift_jmp, reduce_jmp);
             for(auto it=shift_jmp.begin();it!=shift_jmp.end();++it)
             {
-                it->first;
+                //it->first;
                 auto new_closure = get_closure( it->second);
-                m_closures.push_back(new_closure);
-                jmp_table[it->first] = m_closures.size()-1;
-                //if(it->first)
+                int clo_index = 0;
+                auto clo_it = std::find(m_closures.begin(), m_closures.end(), new_closure);
+                if (clo_it == m_closures.end())
+                {
+                    m_closures.push_back(new_closure);
+                    clo_index = m_closures.size() - 1;
+                }
+                else
+                {
+                    clo_index = clo_it - m_closures.begin();
+                }
+                
+                jmp_table[it->first] = clo_index;
             }
             m_jmp.push_back(jmp_table);
             m_reduce.push_back(reduce_jmp);
@@ -298,6 +521,28 @@ int lalr1::generate_closures(std::string mstart)
 
 
 
+    return 0;
+}
+
+int lalr1::patch_accept(string mstart)
+{
+    m_is_accpetable.resize(m_closures.size());
+    for(unsigned i=0;i<m_closures.size();++i)
+    {
+        m_is_accpetable[i]=0;
+        auto curr_set = m_closures[i];
+        for(auto it = curr_set.begin();it!=curr_set.end();++it)
+        {
+            auto statei = *it;
+            if(m_rules[statei.m_rule].size()==0)continue;
+            if(m_rules[statei.m_rule][0]!=mstart)continue;
+            if(statei.m_curr_dot_index+1!=m_rules[statei.m_rule].size())continue;
+            ///当前规则，所有都是可接受
+            m_is_accpetable[i]=1;
+
+
+        }
+    }
     return 0;
 }
 
@@ -365,15 +610,15 @@ string lalr1::print_follow()
 string lalr1::print_closures()
 {
     stringstream ss;
-    ss<<"[CLOSURE]\n";
+    ss<<"//[CLOSURE]\n";
     for(unsigned i=0;i<m_closures.size();++i)
     {
-        ss<<"closure-I"<<i<<":\n";
+        ss<<"//closure-I"<<i<<":\n";
         auto &st = m_closures[i];
         for(auto it=st.begin();it!=st.end();++it)
         {
             auto curr_rule = m_rules[(unsigned)it->m_rule];
-            ss<<curr_rule[0]<<"->";
+            ss<<"//"<<curr_rule[0]<<"->";
             for(unsigned j=1;j<curr_rule.size();++j)
             {
                 if(it->m_curr_dot_index+1==j)
@@ -391,13 +636,13 @@ string lalr1::print_closures()
 string lalr1::print_jmp_table()
 {
     stringstream ss;
-    ss<<"[EDGE]\n";
+    ss<<"//[EDGE]\n";
     for(unsigned i=0;i<m_jmp.size();++i)
     {
         auto rjmp = m_jmp[i];
         for(auto it=rjmp.begin();it!=rjmp.end();++it)
         {
-            ss<<"I"<<i<<"->"<<it->first<<"->I"<<it->second<<"\n";
+            ss<<"//I"<<i<<"->"<<it->first<<"->I"<<it->second<<"\n";
         }
     }
     ss<<"\n";
@@ -476,42 +721,66 @@ std::set<min_state> lalr1::get_closure(std::set<min_state> state)
                     need_loop_next=1;
                 }
             }
+            //如果state被添加项，则it已经不能使用，需要重新循环
+            if (need_loop_next)break;
         }
     }while(need_loop_next);
 
     return state;
 }
 
+std::set<min_state> lalr1::go(std::set<min_state> &state, string tk)
+{
+    return state;
+}
 
 int lalr1::get_closure_next_token(const std::set<min_state> &state,
-                                                                     std::map<std::string, std::set<min_state> > &shift_jmp,
-                                                                     std::map<std::string, int > &reduce_jmp)
+                       std::map<std::string, std::set<min_state> > &shift_jmp,
+                       std::map<std::string, int > &reduce_jmp)
 {
+    shift_jmp.clear();
+    reduce_jmp.clear();
     for(auto it=state.begin();it!=state.end();++it)
     {
         auto curr_rule = m_rules[it->m_rule];
         if(it->m_curr_dot_index+1>=curr_rule.size())
         {   //reduce
             reduce_jmp[it->m_next] = it->m_rule;
+            ///如果需要规约，则规则对应的所有first集，都需要规约
+            auto reduce_to_chars = m_first[it->m_next];
+            for(auto it2=reduce_to_chars.begin();it2!=reduce_to_chars.end();++it2)
+            {
+                reduce_jmp[*it2] = it->m_rule;
+            }
             continue;
         }
         else
         {
             //shift
             std::string tk = curr_rule[it->m_curr_dot_index+1];
+            ///shift如果需要，则tk对应的first集，都要加入
+            ///
+            auto shift_to_chars = m_first[tk];
+
             auto &closure = shift_jmp[tk];
             min_state nst = *it;
             nst.m_curr_dot_index++;
             closure.insert(nst);
+
+            //for(auto it2=shift_to_chars.begin();it2!=shift_to_chars.end();++it2)
+            //{
+            //    auto &closure = shift_jmp[*it2];
+            //    min_state nst = *it;
+            //    nst.m_curr_dot_index++;
+            //    closure.insert(nst);
+            //}
+
+
         }
     }
     return 0;
 }
 
-std::set<min_state> lalr1::go(std::set<min_state> &state, string tk)
-{
-    return state;
-}
 
 std::string lalr1::print_rules()
 {

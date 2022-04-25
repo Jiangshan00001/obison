@@ -1158,4 +1158,3 @@ int bison_file_io::generate_func_token(std::string file_name)
 
 }
 
-

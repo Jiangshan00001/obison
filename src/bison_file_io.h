@@ -95,6 +95,10 @@ public:
     //代码所在的命名空间名称。默认为example
     std::string m_namespace;
 
+    std::string m_include_code;
+    std::vector<std::string> m_rule_code;
+    std::string m_last_code;
+
 
 private:
     int generate_func1(std::string file_name);

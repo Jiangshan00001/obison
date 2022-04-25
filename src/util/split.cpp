@@ -1,3 +1,5 @@
+///2022.4.18 songjiangshan fix size_t index!=npos
+#include <stdint.h>
 #include "split.h"
 
 std::vector<std::string>  split(std::string str, std::string token, bool remove_empty)
@@ -7,7 +9,7 @@ std::vector<std::string>  split(std::string str, std::string token, bool remove_
        {
 
 
-           unsigned index = str.find(token);
+           size_t index = str.find(token);
 
            if(index!=std::string::npos)
            {

@@ -33,3 +33,4 @@
 qt_build/*
 tmp/*
 *.bak
+vc_build/*

@@ -1,7 +1,9 @@
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <assert.h>
 #include "bison_file_io.h"
+#include "lalr1.h"
 #include "argv.h"
 
 #ifndef QT_WID
@@ -12,94 +14,60 @@ int main222(int argc, char *argv[])
 #endif
 {
 
-
-
-
-
-
-
-
-
-
     ArgsParser parse(argc, argv);
+
+
 
     if(parse.HaveOption('i'))
     {
-        std::string file_in = parse.GetOption('i');
-        std::string file_out = parse.GetOption('o');
+        int is_debug = 0;
+        std::string file_name = parse.GetOption('i');
+        std::string file_out = "default.cpp";
+        std::string def_file="bison_header.h";
+        std::string parser_file="bison_parser.h";
+        std::string def_namespace="";
+        if(parse.HaveOption('o'))
+        {
+            file_out = parse.GetOption('o');
+        }
+        if(parse.HaveOption('d'))
+        {
+            is_debug=1;
+        }
+        if(parse.HaveOption('e'))
+        {
+            def_file=parse.GetOption('e');
+        }
+        if(parse.HaveOption('p'))
+        {
+            parser_file=parse.GetOption('p');
+        }
+        if(parse.HaveOption('n'))
+        {
+            def_namespace = parse.GetOption('n');
+        }
+
         bison_file_io m_file;
-        m_file.set_name_space("dd");
-        m_file.m_debug = 1;
-        m_file.read(file_in);
-        m_file.out_y(file_out, 0);
-        //m_file.out_ast_to_icode(out_file_name);
-        //m_file.out_ast_to_icode_func(out_file_name);
-        //m_file.out_ast_to_icode_h(out_file_name);
-        //m_file.out_token_tree(out_file_name);
-        //m_file.out_debug_list(out_file_name);
-    }
+        m_file.m_debug = is_debug;
+        m_file.read(file_name);
+
+        lalr1 m_lalr1;
+        m_lalr1.generate_table(&m_file);
+
+        std::ofstream ofile;
+        ofile.open(def_file);
+        ofile<<m_lalr1.get_def_file(def_namespace);
+        ofile.close();
+        ofile.open(parser_file);
+        ofile<<m_lalr1.get_parser_file();
+        ofile.close();
 
 
-
-    if(argc<5)
-    {
-        std::cout<<"prog -t <test/yy_with_code/cpp_switch/cpp_func/defh/dot/debug_list> in_parser.yy_file output_file_name  [namespace] debug ";
-        std::cout<<"\n";
         exit(0);
+
     }
 
-    bison_file_io m_file;
+    std::cout<<"usage: prog -i lex.l -d def_file.h -e parser_file.h\n";
 
-    std::string type1 = argv[1];
-    std::string type2 = argv[2];
-    std::string in_file_name = argv[3];
-    std::string out_file_name = argv[4];
-
-    std::string name_space = "";
-    if(argc>5)
-    {
-        name_space = argv[5];
-        m_file.set_name_space(name_space);
-    }
-    if(argc>6)
-    {
-        //debug
-        m_file.m_debug = 1;
-    }
-
-    assert(type1=="-t");
-
-    m_file.read(in_file_name);
-
-    if(type2=="test")
-    {
-
-        m_file.out_y(out_file_name, 0);
-    }
-    else if(type2=="yy_with_code")
-    {
-
-        m_file.out_y(out_file_name, 1);
-    }
-    else if(type2=="cpp_switch")
-    {
-        m_file.out_ast_to_icode(out_file_name);
-    }
-    else if(type2=="cpp_func")
-    {
-        m_file.out_ast_to_icode_func(out_file_name);
-    }
-    else if(type2=="defh")
-    {
-        m_file.out_ast_to_icode_h(out_file_name);
-    }
-    else if(type2=="dot")
-    {
-        m_file.out_token_tree(out_file_name);
-    }
-    else if(type2=="debug_list")
-    {
-        m_file.out_debug_list(out_file_name);
-    }
     return 0;
 }
