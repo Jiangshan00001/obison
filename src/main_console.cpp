@@ -5,6 +5,7 @@
 #include "bison_file_io.h"
 #include "lalr1.h"
 #include "argv.h"
+#include "bison_sample1.h"
 
 #ifndef QT_WID
 
@@ -22,14 +23,11 @@ int main222(int argc, char *argv[])
     {
         int is_debug = 0;
         std::string file_name = parse.GetOption('i');
-        std::string file_out = "default.cpp";
         std::string def_file="bison_header.h";
         std::string parser_file="bison_parser.h";
         std::string def_namespace="";
-        if(parse.HaveOption('o'))
-        {
-            file_out = parse.GetOption('o');
-        }
+        std::string class_name = "obison_sample";
+
         if(parse.HaveOption('d'))
         {
             is_debug=1;
@@ -46,6 +44,10 @@ int main222(int argc, char *argv[])
         {
             def_namespace = parse.GetOption('n');
         }
+        if(parse.HaveOption('c'))
+        {
+            class_name = parse.GetOption('c');
+        }
 
         bison_file_io m_file;
         m_file.m_debug = is_debug;
@@ -58,8 +60,11 @@ int main222(int argc, char *argv[])
         ofile.open(def_file);
         ofile<<m_lalr1.get_def_file(def_namespace);
         ofile.close();
+
+        bison_sample1 sample1;
+        std::string ret = sample1.render_parser(class_name, m_lalr1.get_parser_file());
         ofile.open(parser_file);
-        ofile<<m_lalr1.get_parser_file();
+        ofile<<ret;
         ofile.close();
 
 
@@ -67,7 +72,7 @@ int main222(int argc, char *argv[])
 
     }
 
-    std::cout<<"usage: prog -i lex.l -d def_file.h -e parser_file.h\n";
+    std::cout<<"usage: prog -i lex.l -e def_file.h -p parser_file.h -n namespace -c class_name\n";
 
     return 0;
 }
