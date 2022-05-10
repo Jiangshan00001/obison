@@ -1,3 +1,4 @@
+///2022.5.10 remove mylog.h dependency
 #include <assert.h>
 #include <string>
 #include <sstream>
@@ -5,9 +6,9 @@
 #include "str2number.h"
 #include "trim.h"
 #include "split.h"
-#include "mylog.h"
+//#include "mylog.h"
 
-using mylog::cdbg;
+//using mylog::cdbg;
 
 float StrToFloat(std::string  mHexStr)
 {

@@ -2,7 +2,7 @@
 enable_testing()
 
 function(y_to_inc file_name_in file_name_out)
-    add_test( NAME y_to_inc${file_name} COMMAND obison -i ${file_name_in} -o ${file_name_out} )
+    add_test( NAME y_to_inc${file_name} COMMAND obison -i ${file_name_in} -p ${file_name_out} )
 endfunction()
 
 
