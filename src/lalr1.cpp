@@ -10,6 +10,7 @@
 #include "string_eval.h"
 #include "obisonfile.h"
 #include "replace.h"
+#include "trim.h"
 using namespace std;
 
 lalr1::lalr1()
@@ -19,6 +20,11 @@ lalr1::lalr1()
 
 int lalr1::generate_table(OBisonFile *file_in)
 {
+
+    ///记录各算符优先级，在生成shift/reduce表时使用
+    calc_precedence(file_in->m_defs_token);
+
+
     {
         ///添加起始规则
         std::vector<std::string> one_rule;
@@ -68,28 +74,20 @@ int lalr1::generate_table(OBisonFile *file_in)
     generate_follow(m_follow, m_first, 0);
     generate_follow(m_follow_skip_eps, m_first_skip_eps, 1);
 
+    if(m_is_debug){
+        std::cout<<"start generate_closures\n";
+    }
     generate_closures(START_SYM);
+
+    if(m_is_debug){
+        std::cout<<"finish generate_closures\n";
+    }
+
     calc_accept(START_SYM);
 
     calc_action_table();
     calc_middle_action_code();
 
-   ///
-
-    /// 利用符号优先级来解决冲突
-    /// https://pandolia.net/tinyc/ch12_buttom_up_parse_b.html
-    /// 大部分情况下， LR(1) 解析过程的 shift/reduce 冲突可以通过引入符号的优先级来解决。具体方法为：
-    ///（1） 定义某些符号的优先级以及结合方式；
-    ///（2） 当构造 LR(1) 的过程中出现了 shift/reduce 冲突时，即某个状态 I 中同时还有 [ A -> u.aw , c ] 和 [ B -> v. , a ] ，若已定义符号 a 的优先级，且符号串 v 中至少有一个已定义优先级的符号，则可通过以下原则确定 M[I, a] 的动作：
-    ///（2.1） 找到 v 中最右边的、已定义优先级的符号（也就是 v 中离 a 最近的一个已定义优先级的符号），假设为 b ；
-    ///（2.2） 若 a 的优先级 低于 b 的优先级，则： M[I, a] = reduce B -> v ；
-    ///（2.3） 若 a 的优先级 高于 b 的优先级，则： M[I, a] = shift NEXT(I, a) ；
-    ///（2.4） 若 a 的优先级 等于 b 的优先级，则根据 a 和 b 的结合方式：
-    ///（2.4.1） 若 a 和 b 都为左结合，则 M[I, a] = shift NEXT(I, a) ；
-    ///（2.4.2） 若 a 和 b 都为右结合，则 M[I, a] = reduce B -> v 。
-    ///
-    ///
-    ///
 
 
     return 0;
@@ -177,7 +175,6 @@ const std::map<int, string> &lalr1::get_def_file()
 }
 
 int lalr1::calc_action_table()
-
 {
 
 
@@ -190,6 +187,21 @@ int lalr1::calc_action_table()
     /// goto表横轴是非终结符
     ///
 
+     /// 利用符号优先级来解决冲突
+     /// https://pandolia.net/tinyc/ch12_buttom_up_parse_b.html
+     /// 大部分情况下， LR(1) 解析过程的 shift/reduce 冲突可以通过引入符号的优先级来解决。具体方法为：
+     ///（1） 定义某些符号的优先级以及结合方式；
+     ///（2） 当构造 LR(1) 的过程中出现了 shift/reduce 冲突时，即某个状态 I 中同时还有 [ A -> u.aw , c ] 和 [ B -> v. , a ] ，若已定义符号 a 的优先级，且符号串 v 中至少有一个已定义优先级的符号，则可通过以下原则确定 M[I, a] 的动作：
+     ///（2.1） 找到 v 中最右边的、已定义优先级的符号（也就是 v 中离 a 最近的一个已定义优先级的符号），假设为 b ；
+     ///（2.2） 若 a 的优先级 低于 b 的优先级，则： M[I, a] = reduce B -> v ；
+     ///（2.3） 若 a 的优先级 高于 b 的优先级，则： M[I, a] = shift NEXT(I, a) ；
+     ///（2.4） 若 a 的优先级 等于 b 的优先级，则根据 a 和 b 的结合方式：
+     ///（2.4.1） 若 a 和 b 都为左结合，则 M[I, a] = shift NEXT(I, a) ；
+     ///（2.4.2） 若 a 和 b 都为右结合，则 M[I, a] = reduce B -> v 。
+     ///
+     ///
+     ///
+
 
     for(auto it=m_aterm_nval.begin();it!=m_aterm_nval.end();++it)
     {
@@ -200,7 +212,7 @@ int lalr1::calc_action_table()
     for(unsigned state_idx=0;state_idx<m_closures.size();++state_idx)
     {
         ///此处需要处理shift和reduce的优先级规则
-        ///
+        /// 状态固定:state_idx
         ///
         ///
         vector<int> id_vec;
@@ -210,37 +222,57 @@ int lalr1::calc_action_table()
             assert(m_jmp.size()>state_idx);
             std::string jmp_term = m_aterm_nval[m_action_table_x_int[char_idx]];
             ///此处需要有优先级规则等
-
-
-            if(m_is_accpetable[state_idx])
+            ///
+            ///
+            std::vector<int> possible_type;
+            std::vector<int> possible_id;
+            std::vector<int> possible_prec;
+            calc_one_pos_action(state_idx, char_idx, possible_type, possible_id, possible_prec);
+            if(possible_type.empty())
             {
-                type_vec.push_back(E_ACTION_ACCEPT);
-                id_vec.push_back(-1);
-            }
-            else if(m_jmp[state_idx].find(jmp_term)!=m_jmp[state_idx].end())
-            {
-                ///有跳转
-                type_vec.push_back(E_ACTION_SHIFT);
-                id_vec.push_back(m_jmp[state_idx][jmp_term]);
-            }
-            else if(m_reduce[state_idx].find(jmp_term)!=m_reduce[state_idx].end())
-            {
-                ///有规约--只取第一个规则？？？
-                type_vec.push_back(E_ACTION_REDUCE);
-                if(m_reduce[state_idx][jmp_term].size()==1)
-                    id_vec.push_back(m_reduce[state_idx][jmp_term][0]);
-                else{
-
-                    std::cerr<<"reduce state error:  state_idx="<< state_idx<<". term:"<< jmp_term<<"\n";
-                    std::cerr<<"reduce size:"<< m_reduce[state_idx][jmp_term].size()<<"\n";
-                    id_vec.push_back(m_reduce[state_idx][jmp_term][0]);
-                }
-            }
-            else
-            {
+                //无规则
                 type_vec.push_back(E_ACTION_NULL);
                 id_vec.push_back(-1);
             }
+            else
+            {
+                type_vec.push_back(possible_type[0]);
+                id_vec.push_back(possible_id[0]);
+            }
+
+
+//            if(m_is_accpetable[state_idx])
+//            {
+//                type_vec.push_back(E_ACTION_ACCEPT);
+//                id_vec.push_back(-1);
+//            }
+
+
+
+//            if(m_jmp[state_idx].find(jmp_term)!=m_jmp[state_idx].end())
+//            {
+//                ///有跳转
+//                type_vec.push_back(E_ACTION_SHIFT);
+//                id_vec.push_back(m_jmp[state_idx][jmp_term]);
+//            }
+//            else if(m_reduce[state_idx].find(jmp_term)!=m_reduce[state_idx].end())
+//            {
+//                ///有规约--只取第一个规则？？？
+//                type_vec.push_back(E_ACTION_REDUCE);
+//                if(m_reduce[state_idx][jmp_term].size()==1)
+//                    id_vec.push_back(m_reduce[state_idx][jmp_term][0]);
+//                else{
+
+//                    std::cerr<<"reduce state error:  state_idx="<< state_idx<<". term:"<< jmp_term<<"\n";
+//                    std::cerr<<"reduce size:"<< m_reduce[state_idx][jmp_term].size()<<"\n";
+//                    id_vec.push_back(m_reduce[state_idx][jmp_term][0]);
+//                }
+//            }
+//            else
+//            {
+//                type_vec.push_back(E_ACTION_NULL);
+//                id_vec.push_back(-1);
+//            }
         }
         m_action_id.push_back(id_vec);
         m_action_type.push_back(type_vec);
@@ -248,41 +280,6 @@ int lalr1::calc_action_table()
     return 0;
 
 
-#if 0
-    stringstream ss;
-
-    std::vector<int> aterm_val;
-    for(auto it=m_aterm_nval.begin();it!=m_aterm_nval.end();++it)
-    {
-        aterm_val.push_back(it->first);
-    }
-
-    ss<<"std::vector<int> m_char_vec={\n";
-    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
-    {
-        ss<< aterm_val[char_idx]<<",";
-    }
-    ss<<"};\n";
-    ss<<"std::vector<std::string> m_char_str_vec={\n";
-    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
-    {
-        ss<<"\""<< string_pack( m_aterm_nval[aterm_val[char_idx] ] )<<"\",";
-    }
-    ss<<"};\n";
-
-
-
-    ss<<"std::map<int, int>  m_token_index={\n";
-    for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
-    {
-        ss<<"{"<<aterm_val[char_idx]<<", " << char_idx<<"},\n";
-    }
-    ss<<"};\n";
-
-
-    return ss.str();
-
-#endif
 
 }
 
@@ -342,113 +339,7 @@ int lalr1::calc_middle_action_code()
 
     return 0;
 }
-#if 0
-string lalr1::get_action_code()
-{
-    stringstream ss;
 
-    std::map<int, int> action_len;
-    for(unsigned i=0;i<m_is_action.size();++i)
-    {
-        for(unsigned j=0;j<m_is_action[i].size();++j)
-        {
-            if(m_is_action[i][j])
-            {
-                int action_id = m_is_action[i][j];
-                action_len[action_id] = j;
-            }
-        }
-    }
-
-
-
-    std::map<int, int> state_action;
-    for(unsigned i=0;i<m_closures.size();++i)
-    {
-        std::set<min_state> &states = m_closures[i];
-        for(auto it=states.begin();it!=states.end();++it)
-        {
-            const min_state & st = (*it);
-            if(m_is_action[st.m_rule][st.m_curr_dot_index])
-            {
-                if(state_action.find(i)==state_action.end())
-                {
-                    state_action[i] = m_is_action[st.m_rule][st.m_curr_dot_index];
-                }
-                else
-                {
-                    if(state_action[i] != m_is_action[st.m_rule][st.m_curr_dot_index])
-                    {
-                        std::cerr<<"get_action_code: two actions in one state\n";
-                        std::cerr<<"closures:"<<i<<". action index:"<<state_action[i]<<" and "<<m_is_action[st.m_rule][st.m_curr_dot_index]<<"\n";
-                    }
-                }
-            }
-
-        }
-    }
-
-
-    std::map<int, std::set<int> > action_state;
-    for(auto it=state_action.begin();it!=state_action.end();++it)
-    {
-        auto &state_list = action_state[it->second];
-        state_list.insert(it->first);
-    }
-
-
-
-    ss<<"\nobison_token_type action_in_middle(int state_id, const std::deque<obison_token_type> token_stack)\n{\n";
-    ss<<"obison_token_type _tk;\n";
-    ss<< "_tk.m_ret="<<NULL_TOKEN<<";\n";
-
-    ss<<"switch(state_id)\n{\n";//start of switch
-
-    for(auto it=action_state.begin();it!=action_state.end();++it)
-    {
-        auto &state_list = it->second;
-        for(auto it2=state_list.begin();it2!=state_list.end();++it2)
-        {
-            ss<<"case "<< *it2<<":\n";
-        }
-        ss<<"\n{\n";
-        ss<<"std::vector<obison_token_type> v;\n";
-        ss<<"v.assign(token_stack.end()-"<<action_len[it->first] <<", token_stack.end());\n";
-
-        std::string action_str = m_actions[it->first];
-        ///action replace
-        replace(action_str, "$1", "v[0]");
-        replace(action_str, "$2", "v[1]");
-        replace(action_str, "$3", "v[2]");
-        replace(action_str, "$4", "v[3]");
-        replace(action_str, "$5", "v[4]");
-        replace(action_str, "$6", "v[5]");
-        replace(action_str, "$7", "v[6]");
-        replace(action_str, "$$", "_tk");
-
-        replace(action_str, "yychar", "_tk.m_ret");
-
-
-
-
-
-
-        ss<< action_str;
-        ss<<"\n}\n";
-        ss<<"break;\n";
-    }
-    ss<<"default:\n";
-    ss<< "_tk.m_ret="<<NULL_TOKEN<<";\n";
-    ss<<"break;\n";
-
-
-    ss<<"\n}\n";//end of switch
-    ss<<"return _tk;\n";
-    ss<<"\n}\n";
-
-    return ss.str();
-}
-#endif
 
 void lalr1::add_number_to_n_terms()
 {
@@ -513,6 +404,11 @@ void lalr1::add_nterms()
                 std::string rule_tk = m_rules[i][j];
                 if (std::find(m_terms.begin(), m_terms.end(),rule_tk)==m_terms.end())
                 {
+                    if(rule_tk.empty())
+                    {
+                        std::cerr<<"error rule which has empty element:"<< i<<". "<<j<<"\n";
+
+                    }
                     nterms_set.insert(rule_tk);
                 }
         }
@@ -747,6 +643,14 @@ int lalr1::generate_closures(std::string mstart)
 
     for(unsigned i=0;i<m_closures.size();++i)
     {
+        if(m_is_debug)
+        {
+            if(i%100==0)
+            {
+                std::cout<<"generate_closures: closures:"<<i<<"\n";
+            }
+        }
+
         auto &onec = m_closures[i];
         ///如果已经处理过，则jmptable中已经有，则不再处理
         if(m_jmp.size()>i)continue;
@@ -906,7 +810,7 @@ bool lalr1::is_aterm(string mm)
 
 }
 
-int lalr1::add_one_production_to(std::string next_tk, std::string nn_tk, std::set<min_state> &state)
+int lalr1::add_one_production_to(std::string &next_tk, std::string &nn_tk, std::set<min_state> &state, std::vector<min_state> &to_insert)
 {
     ///添加规则到state，返回值是添加个数
     /// 如果已经存在，则不再添加，返回0
@@ -924,7 +828,8 @@ int lalr1::add_one_production_to(std::string next_tk, std::string nn_tk, std::se
         stnew.m_next = nn_tk;
         if(state.find(stnew)==state.end())
         {
-            state.insert(stnew);
+            to_insert.push_back(stnew);
+            //state.insert(stnew);
             need_loop_next=1;
         }
     }
@@ -1002,10 +907,14 @@ Closure lalr1::get_closure(Closure& cstate)
     auto &state = cstate.m_states;
     cstate.m_states.insert(cstate.m_kernel.begin(),cstate.m_kernel.end());
 
+    int loop_cnt=0;
     int need_loop_next=0;
     do{
         need_loop_next=0;
+        loop_cnt++;
 
+        auto it=state.begin();
+        std::vector<min_state> to_insert;
         for(auto it=state.begin();it!=state.end();++it)
         {
             min_state st = (*it);
@@ -1047,10 +956,10 @@ Closure lalr1::get_closure(Closure& cstate)
             std::string nn_tk = get_nn_tk(st.m_rule, st.m_curr_dot_index, st.m_next);
 
             ///找到下一个token对应的规则
-            need_loop_next = add_one_production_to(next_tk, nn_tk, state);
-            //如果state被添加项，则it已经不能使用，需要重新循环
-            if (need_loop_next)break;
+            need_loop_next += add_one_production_to(next_tk, nn_tk, state, to_insert);
         }
+        state.insert(to_insert.begin(), to_insert.end());
+
     }while(need_loop_next);
 
     return cstate;
@@ -1071,6 +980,137 @@ int lalr1::find_eps_rule(string rule_left)
         return i;
     }
     return -1;
+}
+
+void swap_vec_int(std::vector<int> &vec, int i, int j)
+{
+    int tmp = vec[i];
+    vec[i]=vec[j];
+    vec[j]=tmp;
+    return;
+}
+
+
+
+int lalr1::calc_one_pos_action(int state_idx, int char_idx,
+                               std::vector<int> &possible_action_type,
+                               std::vector<int> &possible_action_id,
+                               std::vector<int> &possible_action_prec)
+{
+    possible_action_type.clear();
+    possible_action_id.clear();
+    possible_action_prec.clear();
+
+    std::string jmp_term = m_aterm_nval[m_action_table_x_int[char_idx]];
+    if(m_is_accpetable[state_idx])
+    {
+        possible_action_type.push_back(E_ACTION_ACCEPT);
+        possible_action_id.push_back(-1);
+        possible_action_prec.push_back(1);
+        return 0;
+    }
+    if(m_jmp[state_idx].find(jmp_term)!=m_jmp[state_idx].end())
+    {
+        ///shift
+
+        possible_action_type.push_back(E_ACTION_SHIFT);
+        possible_action_id.push_back(m_jmp[state_idx][jmp_term]);
+        if(m_terms_precedence.find(jmp_term)!=m_terms_precedence.end())
+        {
+            possible_action_prec.push_back(m_terms_precedence[jmp_term]);
+        }
+        else
+        {
+            possible_action_prec.push_back(-1);
+        }
+    }
+
+    if(m_reduce[state_idx].find(jmp_term)!=m_reduce[state_idx].end())
+    {
+        auto curr_reduce_rule = m_reduce[state_idx][jmp_term];
+        for(unsigned rr1=0;rr1!=curr_reduce_rule.size();++rr1)
+        {
+            int rule_index = m_reduce[state_idx][jmp_term][rr1];
+
+            possible_action_type.push_back(E_ACTION_REDUCE);
+            possible_action_id.push_back(rule_index);
+            auto crule = m_rules[rule_index];
+            int prec = -1;
+            for(unsigned rule_k=0;rule_k<crule.size();++rule_k)
+            {
+                if(m_terms_precedence.find( crule[rule_k])!=m_terms_precedence.end())
+                {
+                    if(m_aterms_lrn[crule[rule_k]]==4)continue;//token type
+                    prec = m_terms_precedence[crule[rule_k] ];
+                }
+            }
+            possible_action_prec.push_back(prec);
+        }
+    }
+
+    /// 根据优先级排序
+    /// possible_action_type
+    /// possible_action_id
+    /// possible_action_prec
+    ///
+    ///
+    for(unsigned i=0;i<possible_action_prec.size();++i)
+    {
+        for(unsigned j=i+1;j<possible_action_prec.size();++j)
+        {
+            if(possible_action_prec[i]<possible_action_prec[j])
+            {
+                //swap ij
+                swap_vec_int(possible_action_id, i, j);
+                swap_vec_int(possible_action_type, i, j);
+                swap_vec_int(possible_action_prec, i, j);
+            }
+        }
+    }
+
+    ///如果最前面的和后面的有优先级相等的，则需要根据结合律进行处理
+    ///left 则reduce。 right则shift
+    ///
+
+
+
+    return 0;
+}
+
+int lalr1::calc_precedence(std::vector<std::vector<  std::string> > &mdefs_token)
+{
+    for(unsigned i=0;i<mdefs_token.size();++i)
+    {
+        if(mdefs_token[i].size()<1)continue;
+        std::string mtype = mdefs_token[i][0];
+        mtype=trim(mtype);
+        int mtypeint = 0;
+        if(mtype=="%left"){
+            mtypeint = 1;
+        }
+        else if(mtype=="%right"){
+            mtypeint = 2;
+        }
+        else if(mtype=="%nonassoc"){
+            mtypeint = 3;
+        }
+        else if(mtype=="%token"){
+            mtypeint = 4;
+        }
+        else
+        {
+            std::cerr<<"calc_precedence unknown type:"<<mtype<<"\n";
+            continue;
+        }
+
+        for(unsigned j=1;j<mdefs_token[i].size();++j)
+        {
+            m_terms_precedence[mdefs_token[i][j]] = i;
+            m_aterms_lrn[mdefs_token[i][j]] = mtypeint;
+        }
+    }
+    return 0;
+
 }
 
 int lalr1::get_closure_next_token(const Closure &cstate,
@@ -1282,13 +1322,11 @@ int lalr1::get_closure_next_token(const Closure &cstate,
 std::string lalr1::print_action_goto_table()
 {
     std::stringstream ss;
-    std::vector<int> aterm_val;
 
     ss<<"state_id\t| ";
-    for(auto it=m_aterm_nval.begin();it!=m_aterm_nval.end();++it)
+    for(auto it=m_action_table_x_str.begin();it!=m_action_table_x_str.end();++it)
     {
-        aterm_val.push_back(it->first);
-        ss<< it->second<<"\t| ";
+        ss<< *it<<"\t| ";
     }
     ss<<"\n";
 
@@ -1298,34 +1336,31 @@ std::string lalr1::print_action_goto_table()
 
         vector<int> id_vec;
         vector<int> type_vec;
-        for(unsigned char_idx=0;char_idx<aterm_val.size();++char_idx)
+        for(unsigned char_idx=0;char_idx<m_action_table_x_int.size();++char_idx)
         {
             int act_cnt=0;
-
-
-            std::string jmp_term = m_aterm_nval[aterm_val[char_idx]];
-            if(m_is_accpetable[state_idx])
+            std::vector<int> possible_type;
+            std::vector<int> possible_id;
+            std::vector<int> possible_prec;
+            calc_one_pos_action(state_idx, char_idx, possible_type, possible_id, possible_prec);
+            for(unsigned i=0;i<possible_type.size();++i)
             {
-            ss<<"acc";
-            act_cnt++;
-            }
-            if(m_jmp[state_idx].find(jmp_term)!=m_jmp[state_idx].end())
-            {
-                ///有跳转
-                ss<<"s"<<m_jmp[state_idx][jmp_term];
-                act_cnt++;
-            }
-            if(m_reduce[state_idx].find(jmp_term)!=m_reduce[state_idx].end())
-            {
-                auto curr_reduce_rule = m_reduce[state_idx][jmp_term];
-                for(unsigned rr1=0;rr1!=curr_reduce_rule.size();++rr1)
+                if(i!=0)ss<<"/";
+                if(possible_type[i]==E_ACTION_SHIFT)
                 {
-                    if(rr1!=0){ss<<"/";}
-                    ///有规约
-                    ss<<"r"<<m_reduce[state_idx][jmp_term][rr1];
-                    act_cnt++;
+                    ss<<"s"<<possible_id[i]<<"(" << possible_prec[i]  << ")";
                 }
+                else if(possible_type[i]==E_ACTION_REDUCE)
+                {
+                    ss<<"r"<<possible_id[i]<<"(" << possible_prec[i]  << ")";
+                }
+                else if(possible_type[i]==E_ACTION_ACCEPT)
+                {
+                    ss<<"acc";
+                }
+
             }
+
             ss<<"\t| ";
         }
         ss<<"\n";

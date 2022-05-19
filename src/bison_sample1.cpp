@@ -44,12 +44,6 @@ std::string bison_sample1::render_def_header(const std::map<int, std::string> &a
     return ss.str();
 }
 
-//std::string bison_sample1::render_def_header(std::string core_txt)
-//{
-//    std::stringstream ss;
-
-//    return ss.str();
-//}
 
 
 
@@ -92,7 +86,7 @@ public:
 #define OBISON_ACTION_TYPE_ACCEPT 3
    int m_debug=0;
    int m_is_recoding=1;
-   obison_sample(){
+   CLASS_NAME(){
 
    }
 
@@ -149,8 +143,11 @@ public:
                m_token_stack.push_back(tk);
                m_state_stack.push(next_state);
 
+                ///
                 ///FIXME: 此处，action如果执行，则需要2个返回值：tk.m_ret对应下一个token，如果已经被内部解析则需要天际。 tk 当前action的tk
                 /// 此时需要多一个tk。此tk是action的返回值。 reduce时
+                ///
+                ///
                tk = action_in_middle(next_state, m_token_stack);
                if(tk.m_ret==NULL_20220422_NULL)
                {
@@ -178,13 +175,13 @@ public:
 
                s = m_state_stack.top();
                m_state_stack.push(m_action_id[s][m_token_index[tkn.m_ret]]);
-               //tk = m_oflex.yylex();
            }
            else if(action_type == OBISON_ACTION_TYPE_NOTHING)
            {
                std::cerr<<"action_type-nothing error\n";
                std::cerr<<"curr state:"<<s<<"\n";
                std::cerr<<"next token:"<<tk.m_ret <<". "<< m_char_str_vec[m_token_index[tk.m_ret]]<<". token index"<< m_token_index[tk.m_ret]<<" token str:"<< tk.m_yytext <<"\n";
+               std::cerr<<"LINE/COLUMN:"<<m_oflex.m_line<<"/"<< m_oflex.m_column<<"\n";
                break;
            }
            else if(action_type == OBISON_ACTION_TYPE_ACCEPT)
@@ -223,6 +220,49 @@ public:
    }
 
 
+   int print_token_tree(obison_token_type &tk, int depth=0, int show_rule_text=0)
+   {
+       for(unsigned i=0;i<depth;++i)std::cout<<">";
+
+       if(tk.m_rule_index!=-1)
+       {
+           //rule
+           std::cout<<"R"<< tk.m_rule_index<<", ";
+           //left str
+           if(show_rule_text)
+            std::cout<< m_rules[tk.m_rule_index][0]<<"("<<tk.m_yytext<<  ")";
+           else
+            std::cout<< m_rules[tk.m_rule_index][0]<<" ";
+           std::cout<<"->";
+       }
+       else
+       {
+           std::cout<<m_char_str_vec[m_token_index[tk.m_ret]] <<"("<<tk.m_yytext<<  ")";
+       }
+
+
+       for(unsigned i=0;i<tk.m_children.size();++i)
+       {
+           std::string cr;
+           int tk_index = 0;
+           if(i<tk.m_children.size())
+           {
+               cr=tk.m_children[i].m_yytext;
+               tk_index = m_token_index[tk.m_children[i].m_ret];
+           }
+           //<<"("<<cr<< ")"
+        std::cout<< m_char_str_vec[tk_index]<<" ";
+       }
+       std::cout<<"\n";
+
+       for(unsigned i=0;i<tk.m_children.size();++i)
+       {
+           print_token_tree(tk.m_children[i], depth+1);
+       }
+
+        return depth;
+   }
+
 
 private:
    obison_token_type reduce_match_call(std::deque<obison_token_type> &state_vec, int rule_index)
@@ -255,6 +295,7 @@ private:
        {
            tk.m_children.assign(state_vec.begin(), state_vec.end());
        }
+       comp_process_children(tk);
 
        return tk;
    }
@@ -317,66 +358,74 @@ public:
 
    replace(temp, "CLASS_NAME", class_name);
    replace(temp, "DEF_INCLUDE_CODE", def_code);
-   replace(temp, "BEFORE_AFTER_PROCESS", generate_actions_code(mactions, mbefore_action, mafter_action, mrules));
+   replace(temp, "BEFORE_AFTER_PROCESS", generate_actions_code(mactions, mbefore_action, mafter_action,mcompaction, mrules));
    replace(temp, "TEMPLATE_CORE_POSITION", generate_rules(mrules, materm_val, maction_table_x_str) +
            generate_action_table(mclosures.size(), materm_val.size(),maction_type, maction_id)+
            generate_middle_action(mmiddle_action_len, mmiddle_action_state, mactions ) + last_code );
 
-return temp;
-}
+   return temp;
+   }
+
+   std::string bison_sample1::generate_one_action_code(std::string func_name,
+                                                       const std::map<int, int> &mbefore_action,
+                                                       const std::vector< std::vector<std::string > > &mrules,
+                                                       const std::vector<std::string > &mactions)
+   {
+       std::stringstream ss;
+
+
+       ss<<"int "<<func_name<<"(obison_token_type &tk)\n{\n";
+
+       ss<<"switch(tk.m_rule_index)\n{\n";
+       for( auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
+       {
+           ss<<"case "<<it->first<<"://";
+           for(unsigned ri =0;ri<mrules[it->first].size();++ri)
+           {
+               ss<< mrules[it->first][ri];
+               if(ri==0){ss<<"->" ;}else{ss<<" ";}
+           }
+           ss    <<"\n";
+           std::string action_str = mactions[it->second];
+           replace(action_str, "$1", "tk.m_children[0]");
+           replace(action_str, "$2", "tk.m_children[1]");
+           replace(action_str, "$3", "tk.m_children[2]");
+           replace(action_str, "$4", "tk.m_children[3]");
+           replace(action_str, "$5", "tk.m_children[4]");
+           replace(action_str, "$6", "tk.m_children[5]");
+           replace(action_str, "$7", "tk.m_children[6]");
+           replace(action_str, "$$", "tk");
+
+           replace(action_str, "yychar", "tk.m_ret");
+
+
+
+           ss<<action_str<<"\n";
+           ss<<"\nbreak;\n";
+       }
+       ss<<"default:\n";
+       ss<<"{if(tk.m_rule_index!=-1){std::cerr<<\"action error\"<<tk.m_rule_index<<\"\\n\";}}break;\n";
+
+       ss<<"}\n";//finish switch
+       ss<<"return 0;\n";
+       ss<<"\n}\n";//func_name finish
+
+       return ss.str();
+   }
+
+
 
 std::string bison_sample1::generate_actions_code(const std::vector<std::string > &mactions,
                                                  const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action,
+                                                 const std::map<int, int> &mcompaction,
                                                  const std::vector< std::vector<std::string > > &mrules)
 {
     std::stringstream ss;
 
-    ss<<"int before_process_children(obison_token_type &tk)\n{\n";
+    ss<<generate_one_action_code("before_process_children",mbefore_action, mrules, mactions);
+    ss<<generate_one_action_code("after_process_children",mafter_action, mrules, mactions);
+    ss<<generate_one_action_code("comp_process_children",mcompaction, mrules, mactions);
 
-    ss<<"switch(tk.m_rule_index)\n{\n";
-    for( auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
-    {
-        ss<<"case "<<it->first<<"://";
-        for(unsigned ri =0;ri<mrules[it->first].size();++ri)
-        {
-            ss<< mrules[it->first][ri];
-            if(ri==0){ss<<"->" ;}else{ss<<" ";}
-        }
-        ss    <<"\n";
-        ss<<mactions[it->second]<<"\n";
-        ss<<"\nbreak;\n";
-    }
-    ss<<"default:\n";
-    ss<<"{if(tk.m_rule_index!=-1){std::cerr<<\"action error\"<<tk.m_rule_index<<\"\\n\";}}break;\n";
-
-    ss<<"}\n";//finish switch
-    ss<<"return 0;\n";
-    ss<<"\n}\n";//before_process_children finish
-
-
-    ss<<"int after_process_children(obison_token_type &tk)\n{\n";
-
-    ss<<"switch(tk.m_rule_index)\n{\n";
-    for( auto it=mafter_action.begin();it!=mafter_action.end();++it)
-    {
-        ss<<"case "<<it->first<<"://";
-        for(unsigned ri =0;ri<mrules[it->first].size();++ri)
-        {
-            ss<< mrules[it->first][ri];
-            if(ri==0){ss<<"->" ;}else{ss<<" ";}
-        }
-        ss    <<"\n";
-        ss<<mactions[it->second]<<"\n";
-        ss<<"\nbreak;\n";
-    }
-
-    ss<<"default:\n";
-    ss<<"{if(tk.m_rule_index!=-1){std::cerr<<\"action error\"<<tk.m_rule_index<<\"\\n\";}}break;\n";
-
-    ss<<"}\n";//finish switch
-
-    ss<<"return 0;\n";
-    ss<<"\n}\n";//before_process_children finish
 
     return ss.str();
 }

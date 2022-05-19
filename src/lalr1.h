@@ -135,7 +135,7 @@ public:
 
     void add_squote_to_terms();
 
-    int add_one_production_to(std::string next_tk, std::string nn_tk, std::set<min_state> &state);
+    int add_one_production_to(std::string &next_tk, std::string &nn_tk, std::set<min_state> &state, std::vector<min_state> &to_insert);
 
     std::string get_nn_tk(int rule_index, int dot_index, std::string curr_nn);
     int can_be_skipped(std::string tk);
@@ -208,6 +208,20 @@ public:
     ///每一行是 一个rule. 1个rule有3个规则，分别是当前bottom-up时的规则， top-down时的before和after.
     /// 如果用户没有写规则，则默认是{},保证每个规则都有3个action
     std::vector<std::vector<std::string> > m_before_after_actions;
+private:
+
+    ///计算某个状态输入某个字符时，可能的action和对应的优先级
+    int calc_one_pos_action(int state_idx, int char_idx,
+                            std::vector<int>& possible_action_type,
+                            std::vector<int>& possible_action_id,
+                            std::vector<int>& possible_action_prec);
+    ///计算各终结符的优先级
+    int calc_precedence(std::vector<std::vector<std::string> > &mdefs_token);
+    ///各终结符的优先级: 0优先级最低，越大越高
+    std::map<std::string, int> m_terms_precedence;
+    ///各终结符的结合律，1--left, 2--right 3--nonassoc 4--token
+    std::map<std::string, int> m_aterms_lrn;
+
 
 };
 

@@ -95,8 +95,11 @@ public:
                m_token_stack.push_back(tk);
                m_state_stack.push(next_state);
 
+                ///
                 ///FIXME: 此处，action如果执行，则需要2个返回值：tk.m_ret对应下一个token，如果已经被内部解析则需要天际。 tk 当前action的tk
                 /// 此时需要多一个tk。此tk是action的返回值。 reduce时
+                ///
+                ///
                tk = action_in_middle(next_state, m_token_stack);
                if(tk.m_ret==NULL_20220422_NULL)
                {
@@ -124,13 +127,13 @@ public:
 
                s = m_state_stack.top();
                m_state_stack.push(m_action_id[s][m_token_index[tkn.m_ret]]);
-               //tk = m_oflex.yylex();
            }
            else if(action_type == OBISON_ACTION_TYPE_NOTHING)
            {
                std::cerr<<"action_type-nothing error\n";
                std::cerr<<"curr state:"<<s<<"\n";
                std::cerr<<"next token:"<<tk.m_ret <<". "<< m_char_str_vec[m_token_index[tk.m_ret]]<<". token index"<< m_token_index[tk.m_ret]<<" token str:"<< tk.m_yytext <<"\n";
+               std::cerr<<"LINE/COLUMN:"<<m_oflex.m_line<<"/"<< m_oflex.m_column<<"\n";
                break;
            }
            else if(action_type == OBISON_ACTION_TYPE_ACCEPT)
@@ -169,6 +172,46 @@ public:
    }
 
 
+   int print_token_tree(obison_token_type &tk, int depth=0)
+   {
+       for(unsigned i=0;i<depth;++i)std::cout<<" ";
+
+       if(tk.m_rule_index!=-1)
+       {
+           //rule
+           std::cout<<"R"<< tk.m_rule_index<<", ";
+           //left str
+           std::cout<< m_rules[tk.m_rule_index][0]<<"("<<tk.m_yytext<<  ")";
+           std::cout<<"->";
+       }
+
+
+       for(unsigned i=0;i<tk.m_children.size();++i)
+       {
+           std::string cr;
+           int tk_index = 0;
+           if(i<tk.m_children.size())
+           {
+               cr=tk.m_children[i].m_yytext;
+               tk_index = m_token_index[tk.m_children[i].m_ret];
+           }
+        std::cout<< m_char_str_vec[tk_index]<<"("<<cr<< ")";
+       }
+       std::cout<<"\n";
+
+       for(unsigned i=0;i<depth;++i) std::cout<<" ";
+       std::cout<<"CHILD\n";
+       for(unsigned i=0;i<tk.m_children.size();++i)
+       {
+           print_token_tree(tk.m_children[i], depth+1);
+       }
+
+       for(unsigned i=0;i<depth;++i) std::cout<<" ";
+       std::cout<<"CHILDEND\n";
+
+        return depth;
+   }
+
 
 private:
    obison_token_type reduce_match_call(std::deque<obison_token_type> &state_vec, int rule_index)
@@ -201,6 +244,7 @@ private:
        {
            tk.m_children.assign(state_vec.begin(), state_vec.end());
        }
+       comp_process_children(tk);
 
        return tk;
    }
@@ -565,6 +609,164 @@ case 27://rbody->rbody acts
                                     m_file.m_curr_rule_is_action.push_back(1);
                                 }
                         }
+
+break;
+case 28://rbody->rbody '<' 
+{}
+
+break;
+case 29://rbody->rbody '>' 
+{}
+
+break;
+case 30://acts->act 
+{}
+
+break;
+case 31://acts->acts act 
+{}
+
+break;
+case 32://act->'{' '}' 
+{}
+
+break;
+case 33://prec->EPS_20220422_EPS 
+{}
+
+break;
+case 34://prec->PREC IDENTIFIER 
+{}
+
+break;
+case 35://prec->PREC IDENTIFIER act 
+{}
+
+break;
+case 36://prec->prec ';' 
+{}
+
+break;
+default:
+{if(tk.m_rule_index!=-1){std::cerr<<"action error"<<tk.m_rule_index<<"\n";}}break;
+}
+return 0;
+
+}
+int comp_process_children(obison_token_type &tk)
+{
+switch(tk.m_rule_index)
+{
+case 0://start_20220422_start->spec EOF_20220422_EOF 
+{}
+
+break;
+case 1://spec->defs MARK rules tail 
+{}
+
+break;
+case 2://tail->MARK FAKE_FINISH_MARK 
+{}
+
+break;
+case 3://tail->EPS_20220422_EPS 
+{}
+
+break;
+case 4://defs->EPS_20220422_EPS 
+{}
+
+break;
+case 5://defs->defs def 
+{}
+
+break;
+case 6://def->START IDENTIFIER 
+{}
+
+break;
+case 7://def->UNION 
+{}
+
+break;
+case 8://def->LCURL RCURL 
+{}
+
+break;
+case 9://def->rword tag nlist 
+{}
+
+break;
+case 10://rword->TOKEN 
+{}
+
+break;
+case 11://rword->LEFT 
+{}
+
+break;
+case 12://rword->RIGHT 
+{}
+
+break;
+case 13://rword->NONASSOC 
+{}
+
+break;
+case 14://rword->TYPE 
+{}
+
+break;
+case 15://tag->EPS_20220422_EPS 
+{}
+
+break;
+case 16://tag->'<' IDENTIFIER '>' 
+{}
+
+break;
+case 17://nlist->nmno 
+{}
+
+break;
+case 18://nlist->nlist nmno 
+{}
+
+break;
+case 19://nmno->IDENTIFIER 
+{}
+
+break;
+case 20://nmno->IDENTIFIER NUMBER 
+{}
+
+break;
+case 21://rules->C_IDENTIFIER rbody prec 
+{}
+
+break;
+case 22://rules->rules rule 
+{}
+
+break;
+case 23://rule->C_IDENTIFIER rbody prec 
+{}
+
+break;
+case 24://rule->'|' rbody prec 
+{}
+
+break;
+case 25://rbody->EPS_20220422_EPS 
+{}
+
+break;
+case 26://rbody->rbody IDENTIFIER 
+{}
+
+break;
+case 27://rbody->rbody acts 
+{}
 
 break;
 case 28://rbody->rbody '<' 

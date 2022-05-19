@@ -35,6 +35,7 @@ public:
 
    int m_state_id;
    std::vector<OToken> m_children;
+   int m_val;
 };
 #endif
 

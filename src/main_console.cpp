@@ -54,15 +54,17 @@ int main(int argc, char* argv[])
         auto parse_ret = m_bison.yyparse();
 
         //m_bison.m_file.print_all();
-
+        std::cout<<"start process_top_down\n";
         m_bison.process_top_down(parse_ret);
 
 
+        std::cout<<"start generate_table\n";
         lalr1 m_lalr1;
         m_lalr1.generate_table(&m_bison.m_file);
 
         bison_sample1 sample1;
 
+        std::cout<<"generate_table finish!\n";
 
         std::ofstream ofile;
         ofile.open(def_file);

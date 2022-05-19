@@ -54,6 +54,8 @@ L?\"(\\.|[^\\"\n])*\"	{ return(IDENTIFIER); }
 
 "\'"."\'" {return IDENTIFIER;}
 
+"\n"  {/* unmatched character \n*/ }
+
 .			{ /* Add code to complain about unmatched characters */ }
 
 %%

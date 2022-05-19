@@ -23,8 +23,13 @@ public:
                               std::map<int, int> &mbefore_action, std::map<int, int> &mafter_action,
                               std::map<int, int> &mcompaction);
 private:
+    std::string generate_one_action_code(std::string func_name,
+                                         const std::map<int, int> &mbefore_action,
+                                         const std::vector< std::vector<std::string > > &mrules,
+                                         const std::vector<std::string > &mactions);
+
     std::string generate_actions_code(const std::vector<std::string> &mactions,
-                                      const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action,
+                                      const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action, const std::map<int, int> &mcompaction,
                                       const std::vector<std::vector<std::string> > &mrules);
 
     std::string generate_rules(const std::vector<std::vector<std::string> > &mrules,
