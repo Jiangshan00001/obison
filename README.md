@@ -4,11 +4,7 @@ oh, this is another bison implementation try using pure c++, so that it could be
 
 
 
-
-
-
-
-http://www.quut.com/c/ANSI-C-grammar-y.html
+http://gokcehan.github.io/notes/recursive-descent-parsing.html
 
 
 
@@ -94,6 +90,11 @@ https://blog.csdn.net/C666Lover/article/details/109258558
 https://blog.csdn.net/killian0213/article/details/108478863
 
 
+
+http://www.cs.ecu.edu/karl/5220/spr16/Notes/Bottom-up/lr1.html
+
+
+
 项目集族
 
 先构造LR（0）项目，再为为其配上搜索符
@@ -106,5 +107,6 @@ Follow集
 CLOSURE(I) -- 表示和I中项目可以识别同样活前缀的所有项目的集合。
 GO(I,X)  --- 
 
-http://www.cs.ecu.edu/karl/5220/spr16/Notes/Bottom-up/lr1.html
 
+miniyacc:
+https://c9x.me/yacc/

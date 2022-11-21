@@ -91,7 +91,7 @@ public:
    }
 
 
-   typedef  class LEX_C::token obison_token_type;
+   typedef  typename LEX_C::token obison_token_type;
 
 
    obison_token_type yyparse(){
