@@ -95,19 +95,5 @@ int main(int argc, char* argv[])
 
     std::cout<<"usage: prog -i lex.yy -e def_file.h -p parser_file.h -n namespace -c class_name\n";
 
-
-
-
-    //OBisonFile m_file;
-    //m_file.m_debug = 1;
-    //m_file.read(file_name);
-
-   // lalr1 m_lalr1;
-    //m_lalr1.generate_table(&m_file);
-
-    //std::ofstream ofile;
-    //ofile.open("parser.dbg.txt");
-    //ofile<<m_lalr1.print_debug_info();
-    //ofile.close();
     return 0;
 }
