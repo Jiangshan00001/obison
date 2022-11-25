@@ -11,7 +11,7 @@ bison_sample1::bison_sample1()
 
 }
 
-std::string bison_sample1::render_def_header(const std::map<int, std::string> &aterm_nval, std::string namespace_to_add, std::string enum_name)
+std::string bison_sample1::render_def_header(const std::map<int, std::string> &aterm_nval, std::string namespace_to_add, std::string enum_name,std::vector<std::string> mterms)
 {
 
     std::stringstream ss;
@@ -30,6 +30,11 @@ std::string bison_sample1::render_def_header(const std::map<int, std::string> &a
         if (it->second[0]=='\'')
         {
             ss<<"//";
+        }
+        if(std::find(mterms.begin(), mterms.end(), it->second)==mterms.end())
+        {
+            //非终结符,添加前缀
+            ss<<"NTK_";
         }
         ss<<""<< it->second<<"=" << it->first<<",\n";
     }

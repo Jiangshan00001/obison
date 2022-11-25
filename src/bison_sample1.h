@@ -10,7 +10,7 @@ class bison_sample1
 {
 public:
     bison_sample1();
-    std::string render_def_header(const std::map<int,std::string> &aterm_nval,std::string namespace_to_add, std::string enum_name);
+    std::string render_def_header(const std::map<int,std::string> &aterm_nval, std::string namespace_to_add, std::string enum_name, std::vector<std::string> mterms);
     std::string render_parser(std::string &class_name, std::vector<std::vector<std::string> > &mrules,
                               std::map<std::string, int> &materm_val,
                               std::string &def_code, std::string &last_code,

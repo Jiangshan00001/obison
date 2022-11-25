@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
         std::ofstream ofile;
         ofile.open(def_file);
         auto aterm = m_lalr1.get_def_file();
-        ofile<<sample1.render_def_header(aterm,def_namespace, "e_bison_head");
+        ofile<<sample1.render_def_header(aterm,def_namespace, "e_bison_head", m_lalr1.m_terms);
         ofile.close();
 
         std::string ret = sample1.render_parser(class_name,

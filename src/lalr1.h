@@ -115,6 +115,7 @@ public:
     std::vector<std::string> m_terms;//所有终结符
     std::vector<std::string> m_nterms;//所有非终结符
 
+    ///所有终结符+非终结符
     std::map<std::string, int> m_aterm_val;
     std::map<int,std::string> m_aterm_nval;
 
