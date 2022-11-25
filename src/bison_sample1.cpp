@@ -1,5 +1,6 @@
 #include <sstream>
 #include <sstream>
+#include <algorithm>
 #include "replace.h"
 #include "bison_sample1.h"
 #include "lalr1.h"
