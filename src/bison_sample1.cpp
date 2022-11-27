@@ -63,8 +63,9 @@ std::string bison_sample1::render_parser(std::string &class_name, std::vector<st
                                          std::vector<std::string> &maction_table_x_str,
                                          std::map<int, int > &mmiddle_action_len, std::map<int, std::set<int> > &mmiddle_action_state,
                                          std::map<int, int > &mbefore_action, std::map<int, int > &mafter_action,
-                                         std::map<int, int > &mcompaction
-                                         )
+                                         std::map<int, int > &mcompaction,
+                                         std::string name_space
+                                         , std::string btaken_file, std::string btaken_class_name)
 {
     std::stringstream ss;
 
@@ -77,9 +78,16 @@ std::string bison_sample1::render_parser(std::string &class_name, std::vector<st
 #include <vector>
 #include <iostream>
 #include <deque>
+
+#include "BTAKEN_FILE_NAME"
+
 ///
 
+
 DEF_INCLUDE_CODE
+
+
+namespace NAME_SPACE{
 
 template<class LEX_C>
 class CLASS_NAME
@@ -97,10 +105,10 @@ public:
    }
 
 
-   typedef  typename LEX_C::token obison_token_type;
+   typedef  typename LEX_C::token lex_token_type;
+   typedef class BTAKEN_CLASS_NAME syntax_taken_type;
 
-
-   obison_token_type yyparse(){
+   lex_token_type yyparse(){
        ///get token, parse the token with shift/reduce
        ///
        ///
@@ -129,7 +137,7 @@ public:
 
        auto tk = m_oflex.yylex();
        std::stack<int> m_state_stack;
-       std::deque<obison_token_type> m_token_stack;
+       std::deque<lex_token_type> m_token_stack;
        m_state_stack.push(0);
 
        while(true)
@@ -167,7 +175,7 @@ public:
                int reduce_state = m_action_id[s][m_token_index[tk.m_ret]];
                int rule_right_len = m_rules[reduce_state].size()-1;
 
-               std::deque<obison_token_type> state_vec;
+               std::deque<lex_token_type> state_vec;
                while(rule_right_len>0)
                {
                    state_vec.push_front(m_token_stack.back());
@@ -226,7 +234,7 @@ public:
    }
 
 
-   int print_token_tree(obison_token_type &tk, int depth=0, int show_rule_text=0)
+   int print_token_tree(lex_token_type &tk, int depth=0, int show_rule_text=0)
    {
        for(unsigned i=0;i<depth;++i)std::cout<<">";
 
@@ -271,9 +279,10 @@ public:
 
 
 private:
-   obison_token_type reduce_match_call(std::deque<obison_token_type> &state_vec, int rule_index)
+   lex_token_type reduce_match_call(std::deque<lex_token_type> &state_vec, int rule_index)
    {
-       obison_token_type tk;
+       lex_token_type tk;
+       syntax_taken_type stk;
        if(m_debug)
        {
            std::cout<<"match:\n";
@@ -301,7 +310,7 @@ private:
        {
            tk.m_children.assign(state_vec.begin(), state_vec.end());
        }
-       comp_process_children(tk);
+       comp_process_children(tk,stk);
 
        return tk;
    }
@@ -310,15 +319,16 @@ private:
    ///def actions before and after
    ///
 public:
-   int process_top_down(obison_token_type &tk)
+   int process_top_down(lex_token_type &tk, syntax_taken_type &stk)
    {
-        process_one_token(tk, 0);
+        process_one_token(tk, stk, 0);
         return 0;
    }
 private:
-   void process_one_token(obison_token_type &tk, int depth=0)
+   void process_one_token(lex_token_type &tk,syntax_taken_type &stk,  int depth=0)
    {
-       before_process_children(tk);
+       stk.m_children.resize(tk.m_children.size());
+       before_process_children(tk, stk);
        if(m_debug)
        {
            for(unsigned i=0;i<depth;++i)
@@ -328,9 +338,9 @@ private:
 
        for(unsigned i=0;i<tk.m_children.size();++i)
        {
-           process_one_token(tk.m_children[i], depth+1);
+           process_one_token(tk.m_children[i], stk, depth+1);
        }
-       after_process_children(tk);
+       after_process_children(tk, stk);
    }
 
    BEFORE_AFTER_PROCESS
@@ -358,16 +368,25 @@ public:
 
 };
 
+
+};//NAME_SPACE
+
 #endif // CLASS_NAME_H
 
                        )AAA";
 
-   replace(temp, "CLASS_NAME", class_name);
-   replace(temp, "DEF_INCLUDE_CODE", def_code);
+    replace(temp, "BTAKEN_CLASS_NAME",btaken_class_name);
+    replace(temp, "BTAKEN_FILE_NAME",btaken_file);
+
+    replace(temp, "CLASS_NAME", class_name);
+    replace(temp, "NAME_SPACE", name_space);
+    replace(temp, "DEF_INCLUDE_CODE", def_code);
+
    replace(temp, "BEFORE_AFTER_PROCESS", generate_actions_code(mactions, mbefore_action, mafter_action,mcompaction, mrules));
    replace(temp, "TEMPLATE_CORE_POSITION", generate_rules(mrules, materm_val, maction_table_x_str) +
            generate_action_table(mclosures.size(), materm_val.size(),maction_type, maction_id)+
            generate_middle_action(mmiddle_action_len, mmiddle_action_state, mactions ) + last_code );
+
 
    return temp;
    }
@@ -380,7 +399,7 @@ public:
        std::stringstream ss;
 
 
-       ss<<"int "<<func_name<<"(obison_token_type &tk)\n{\n";
+       ss<<"int "<<func_name<<"(lex_token_type &tk, syntax_taken_type &stk)\n{\n";
 
        ss<<"switch(tk.m_rule_index)\n{\n";
        for( auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
@@ -561,8 +580,8 @@ std::string bison_sample1::generate_middle_action(std::map<int, int > &mmiddle_a
     std::stringstream ss;
 
 
-    ss<<"\nobison_token_type action_in_middle(int state_id, const std::deque<obison_token_type> token_stack)\n{\n";
-    ss<<"obison_token_type _tk;\n";
+    ss<<"\nlex_token_type action_in_middle(int state_id, const std::deque<lex_token_type> token_stack)\n{\n";
+    ss<<"lex_token_type _tk;\n";
     ss<< "_tk.m_ret="<<NULL_TOKEN<<";\n";
 
     ss<<"switch(state_id)\n{\n";//start of switch
@@ -575,7 +594,7 @@ std::string bison_sample1::generate_middle_action(std::map<int, int > &mmiddle_a
             ss<<"case "<< *it2<<":\n";
         }
         ss<<"\n{\n";
-        ss<<"std::vector<obison_token_type> v;\n";
+        ss<<"std::vector<lex_token_type> v;\n";
         ss<<"v.assign(token_stack.end()-"<<mmiddle_action_len[it->first] <<", token_stack.end());\n";
 
         std::string action_str = mactions[it->first];

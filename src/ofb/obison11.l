@@ -7,8 +7,8 @@ FS			(f|F|l|L)
 IS                      ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 
 %{
-#include "otoken.h"
-#define YYSTYPE OToken
+#include "lex_token.h"
+#define YYSTYPE lex_token
 
 //https://lists.gnu.org/archive/html/help-bison/2009-08/msg00015.html
 #include <stdio.h>
@@ -17,6 +17,8 @@ IS                      ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 void comment(void);
 //int yyinput();
 //int yylex();
+////{L}({L}|{D})*[ \t\r\n]*":"		{ return(C_IDENTIFIER); }
+
 %}
 
 %%
@@ -29,13 +31,12 @@ void comment(void);
 "%right"			{ return(RIGHT); }
 "%type"			{ return(TYPE); }
 "%start"			{ return(START); }
-
+"%union"           { return(UNION); }
 "%{"			{ return(LCURL); }
 "%}"			{ return(RCURL); }
 "%%"			{  return(MARK); }
 [0-9][0-9]*			{ return(NUMBER); }
 
-{L}({L}|{D})*[ \t\r\n]*":"		{ return(C_IDENTIFIER); }
 
 ":" {return ':';}
 "|" {return '|';}
@@ -84,21 +85,3 @@ void comment(void)
 
 int column = 0;
 
-
-int check_type(void)
-{
-/*
-* pseudo code --- this is what it should check
-*
-*	if (yytext == type_name)
-*		return TYPE_NAME;
-*
-*	return IDENTIFIER;
-*/
-
-/*
-*	it actually will only return IDENTIFIER
-*/
-
-	return IDENTIFIER;
-}

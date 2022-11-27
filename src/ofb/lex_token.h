@@ -1,28 +1,38 @@
 
-#ifndef OToken_h
-#define OToken_h
+#ifndef lex_token_h
+#define lex_token_h
 #include <vector>
 #include <string>
-class OToken
+#include <iostream>
+
+namespace obison_space
+{
+
+class lex_token
 {
 public:
-   OToken()
+   lex_token()
    {
       m_rule_index=-1;
       m_ret= is_eof=m_line=m_column=0;
    }
-   OToken(int typ, std::string ytext)
+   lex_token(int typ, std::string ytext)
    {
       m_rule_index=-1;
       m_yytext=ytext;
       m_ret= is_eof=m_line=m_column=0;
       m_ret=typ;
    }
-   OToken(std::string typ_str, std::string ytext)
+   lex_token(std::string typ_str, std::string ytext)
    {
       m_ret= is_eof=m_line=m_column=0;
       m_yytext=ytext;
       m_typestr=typ_str;
+   }
+   friend std::ostream& operator<<(std::ostream&out, const lex_token & a)
+   {
+    out<<a.m_yytext<<"\n";
+    return out;
    }
 
    std::string m_yytext;
@@ -34,9 +44,12 @@ public:
    int m_column;
 
    int m_state_id;
-   std::vector<OToken> m_children;
+   std::vector<lex_token> m_children;
    int m_val;
 };
+
+};//obison_space
+
 #endif
 
                    

@@ -640,7 +640,6 @@ int lalr1::generate_closures(std::string mstart)
     first_state = get_closure(first_state);
     m_closures.push_back(first_state);
 
-
     for(unsigned i=0;i<m_closures.size();++i)
     {
         if(m_is_debug)
@@ -681,6 +680,7 @@ int lalr1::generate_closures(std::string mstart)
         m_jmp.push_back(jmp_table);
         m_reduce.push_back(reduce_jmp);
     }
+    std::cout<<"closures_cnt:"<<m_closures.size()<<"\n";
 
 
     return 0;

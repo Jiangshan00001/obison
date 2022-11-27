@@ -21,7 +21,9 @@ public:
                               std::vector<std::string> &maction_table_x_str,
                               std::map<int, int> &mmiddle_action_len, std::map<int, std::set<int> > &mmiddle_action_state,
                               std::map<int, int> &mbefore_action, std::map<int, int> &mafter_action,
-                              std::map<int, int> &mcompaction);
+                              std::map<int, int> &mcompaction,
+                              std::string name_space,
+                              std::string btaken_file, std::string btaken_class_name);
 private:
     std::string generate_one_action_code(std::string func_name,
                                          const std::map<int, int> &mbefore_action,

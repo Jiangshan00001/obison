@@ -53,7 +53,9 @@ public:
 
 };
 
-
+/**
+ * @brief The Closure class 闭包操作
+ */
 class Closure{
 public:
     std::set<min_state> m_kernel;
@@ -70,11 +72,17 @@ public:
 #define EPS_SYM "EPS_20220422_EPS"
 #define NULL_TOKEN "NULL_20220422_NULL"
 
-///TODO: 暂未解决空字符问题
+///
+///
+///DONE: 解决空字符问题
 /// 添加 START_20220422_START --6000 对应起始符号
 /// 添加 EPS_20220422_EPS --6001 对应空字符？
 /// 添加 END_20220422_END --6002 对应结束字符
 ///
+///
+/**
+ * @brief The lalr1 class lalr的算法
+ */
 class lalr1
 {
 public:

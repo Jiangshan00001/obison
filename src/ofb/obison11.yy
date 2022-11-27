@@ -4,8 +4,8 @@
 /* The following are recognized by the lexical analyzer. */
 
 %{
-#include "otoken.h"
-#define YYSTYPE OToken
+#include "lex_token.h"
+#define YYSTYPE lex_token
 #include <stdio.h>
 #include <iostream>
 #include "lex_header.h"
@@ -23,15 +23,13 @@ std::string get_one_action();
 
 
 %token    IDENTIFIER      /* Includes identifiers and literals */
-%token    C_IDENTIFIER    /* identifier (but not literal)
-                             followed by a :. */
 %token    NUMBER          /* [0-9][0-9]* */
 
 
 /* Reserved words : %type=>TYPE %left=>LEFT, and so on */
 
 
-%token    LEFT RIGHT NONASSOC TOKEN PREC TYPE START UNION
+%token    LEFT RIGHT NONASSOC TOKEN TYPE START UNION
 
 
 %token    MARK  FAKE_FINISH_MARK          /* The %% mark. */
@@ -60,7 +58,7 @@ tail  : MARK {
                 last_code.insert(last_code.end(), (char)one_char);
                 one_char=yyinput();
             }
-            OToken ttk("tail", last_code);
+            lex_token_type ttk("tail", last_code);
             m_file.m_last_code =last_code;
             if(m_debug){std::cout<<"tail eatup finish. size:"<< last_code.size()<<"\n";}
             yychar = FAKE_FINISH_MARK;
@@ -73,11 +71,16 @@ defs  : /* Empty. */
         |    defs def {} {}
       ;
 def   : START IDENTIFIER  {m_file.m_start = tk.m_children[1].m_yytext;} {} {}
-      |    UNION
-      {
-        /* Copy union definition to output. */
-		printf("here should start union definition\n");
-      }
+      |    UNION '{'
+           {
+          /* Copy action, translate $$, and so on. */
+            std::string curr_act = get_one_action();
+            m_file.m_default_class_var=curr_act;
+          lex_token_type tk("act", curr_act);
+          $$=tk;
+          yychar='}';//add RCURL to stack???
+
+        }   '}'
       |    LCURL
       {
 		printf("here should finish include definition\n");
@@ -99,7 +102,7 @@ def   : START IDENTIFIER  {m_file.m_start = tk.m_children[1].m_yytext;} {} {}
         one_char = yyinput();
         //$$=$1;
         /* Copy C code to output file. */
-        OToken tk("def_inc_code", include_code);
+        lex_token_type tk("def_inc_code", include_code);
         $$= tk;
         yychar=RCURL;//add RCURL to stack???
 
@@ -141,25 +144,51 @@ nmno  : IDENTIFIER     {m_file.m_curr_rword.push_back(tk.m_children[0].m_yytext)
 /* Rule section */
 
 
-rules : C_IDENTIFIER rbody prec  {
-            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
-            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-            m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
-            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-
-            m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
-            m_file.m_curr_rule_is_action.push_back(0);
-            }
-            {
-                    m_file.m_rules.push_back(m_file.m_curr_rule);
-                    m_file.m_is_action.push_back(m_file.m_curr_rule_is_action);
-
-                    m_file.m_curr_rule.clear();
-                    m_file.m_curr_rule_is_action.clear();
-                }
+rules : rule
         | rules  rule {m_file.m_curr_rule.clear(); m_file.m_curr_rule_is_action.clear();} {}
       ;
-rule  : C_IDENTIFIER rbody prec  {
+r_head : IDENTIFIER ':' {
+                            m_file.m_curr_rule.clear();
+                            m_file.m_curr_rule_is_action.clear();
+                            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
+                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
+                            m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
+                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
+
+                            m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
+                            m_file.m_curr_rule_is_action.push_back(0);
+                        }
+                    | IDENTIFIER '{' {
+
+                        m_file.m_curr_rule.clear();
+                        m_file.m_curr_rule_is_action.clear();
+                        m_file.m_curr_rule_left = v[0].m_yytext;
+                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
+                        m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
+                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
+
+                        m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
+                        m_file.m_curr_rule_is_action.push_back(0);
+
+                        /* Copy action, translate $$, and so on. */
+                          std::string curr_act = get_one_action();
+                        m_file.m_nterm_class_var[m_file.m_curr_rule_left] = curr_act;
+                        lex_token_type tk("act", curr_act);
+                        $$=tk;
+                        yychar='}';//add RCURL to stack???
+                    }  '}'
+                    ;
+
+
+
+rule : rulemulti prec
+      ;
+rulemulti :   rulesingleline
+         | rulemulti rulesingleline
+         ;
+
+
+rulesingleline  : r_head rbody   {
             m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
             m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
             m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
@@ -174,7 +203,7 @@ rule  : C_IDENTIFIER rbody prec  {
                     m_file.m_curr_rule.clear();
                     m_file.m_curr_rule_is_action.clear();
                 }
-            | '|' rbody prec  {
+            | '|' rbody   {
                     m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
                     m_file.m_curr_rule_is_action.push_back(0);
                     }
@@ -185,6 +214,7 @@ rule  : C_IDENTIFIER rbody prec  {
                         m_file.m_curr_rule.clear();
                         m_file.m_curr_rule_is_action.clear();
                     }
+
       ;
 rbody : /* empty */
         | rbody IDENTIFIER {} {
@@ -204,7 +234,7 @@ rbody : /* empty */
 
 
 acts: act          {}
-                    | acts act {}
+     | acts act {}
      ;
 
 act   : '{'
@@ -213,7 +243,7 @@ act   : '{'
           /* Copy action, translate $$, and so on. */
             std::string curr_act = get_one_action();
             std::cerr<<"action finish here\n";
-          OToken tk("act", curr_act);
+          lex_token_type tk("act", curr_act);
           $$=tk;
           yychar='}';//add RCURL to stack???
 
@@ -221,17 +251,15 @@ act   : '{'
 
           '}'
       ;
-prec  : /* Empty */
-          | PREC IDENTIFIER
-      | PREC IDENTIFIER act
-          | prec ';'
+prec  : ';'
+      | prec ';'
       ;
 	  
 %% 
 
 OBisonFile m_file;
 
-int unpack_acts(std::vector<std::string> &rule, OToken &tk)
+int unpack_acts(std::vector<std::string> &rule, lex_token_type &tk)
 {
     if(tk.m_typestr=="act:0")
     {
