@@ -3,6 +3,10 @@
 
 OBisonFile::OBisonFile()
 {
+    m_default_class_var.resize(2);
+    m_default_class_var.at(0)='{';
+    m_default_class_var.at(1)='}';
+    //m_default_class_var="{}";
 
 }
 
@@ -48,6 +52,7 @@ int OBisonFile::print_all()
         }
         std::cout<<"\n";
     }
+
 
     return 0;
 }

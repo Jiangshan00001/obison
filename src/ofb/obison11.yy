@@ -147,36 +147,15 @@ nmno  : IDENTIFIER     {m_file.m_curr_rword.push_back(tk.m_children[0].m_yytext)
 rules : rule
         | rules  rule {m_file.m_curr_rule.clear(); m_file.m_curr_rule_is_action.clear();} {}
       ;
-r_head : IDENTIFIER ':' {
-                            m_file.m_curr_rule.clear();
-                            m_file.m_curr_rule_is_action.clear();
-                            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
-                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-                            m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
-                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-
-                            m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
-                            m_file.m_curr_rule_is_action.push_back(0);
-                        }
+r_head : IDENTIFIER ':'
                     | IDENTIFIER '{' {
-
-                        m_file.m_curr_rule.clear();
-                        m_file.m_curr_rule_is_action.clear();
-                        m_file.m_curr_rule_left = v[0].m_yytext;
-                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-                        m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
-                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-
-                        m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
-                        m_file.m_curr_rule_is_action.push_back(0);
-
                         /* Copy action, translate $$, and so on. */
                           std::string curr_act = get_one_action();
-                        m_file.m_nterm_class_var[m_file.m_curr_rule_left] = curr_act;
+                        m_file.m_nterm_class_var[v[0].m_yytext] = curr_act;
                         lex_token_type tk("act", curr_act);
                         $$=tk;
                         yychar='}';//add RCURL to stack???
-                    }  '}'
+                    }  '}' ':'
                     ;
 
 
@@ -189,7 +168,14 @@ rulemulti :   rulesingleline
 
 
 rulesingleline  : r_head rbody   {
-            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
+             if (tk.m_children[0].m_children.size()<=2)
+             {
+                 m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
+             }
+             else
+             {
+                 m_file.m_curr_rule_left = tk.m_children[0].m_children[0].m_yytext;
+             }
             m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
             m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
             m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);

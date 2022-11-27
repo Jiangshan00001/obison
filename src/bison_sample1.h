@@ -23,16 +23,17 @@ public:
                               std::map<int, int> &mbefore_action, std::map<int, int> &mafter_action,
                               std::map<int, int> &mcompaction,
                               std::string name_space,
-                              std::string btaken_file, std::string btaken_class_name);
+                              std::string btaken_file, std::string btaken_class_name,
+                              std::vector<std::string> nterms);
 private:
     std::string generate_one_action_code(std::string func_name,
                                          const std::map<int, int> &mbefore_action,
                                          const std::vector< std::vector<std::string > > &mrules,
-                                         const std::vector<std::string > &mactions);
+                                         const std::vector<std::string > &mactions, std::vector<std::string> &nterms);
 
     std::string generate_actions_code(const std::vector<std::string> &mactions,
                                       const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action, const std::map<int, int> &mcompaction,
-                                      const std::vector<std::vector<std::string> > &mrules);
+                                      const std::vector<std::vector<std::string> > &mrules, std::vector<std::string> &nterms);
 
     std::string generate_rules(const std::vector<std::vector<std::string> > &mrules,
                                std::map<std::string, int> &materm_val, std::vector<std::string> &maction_table_x_str);

@@ -61,11 +61,13 @@ std::string bison_sample1::render_parser(std::string &class_name, std::vector<st
                                          std::vector< std::vector<int> > &maction_id,
                                          std::vector< std::vector<int> > &maction_type,
                                          std::vector<std::string> &maction_table_x_str,
-                                         std::map<int, int > &mmiddle_action_len, std::map<int, std::set<int> > &mmiddle_action_state,
+                                         std::map<int, int > &mmiddle_action_len,
+                                         std::map<int, std::set<int> > &mmiddle_action_state,
                                          std::map<int, int > &mbefore_action, std::map<int, int > &mafter_action,
                                          std::map<int, int > &mcompaction,
                                          std::string name_space
-                                         , std::string btaken_file, std::string btaken_class_name)
+                                         , std::string btaken_file, std::string btaken_class_name,
+                                         std::vector<std::string> nterms)
 {
     std::stringstream ss;
 
@@ -382,10 +384,15 @@ public:
     replace(temp, "NAME_SPACE", name_space);
     replace(temp, "DEF_INCLUDE_CODE", def_code);
 
-   replace(temp, "BEFORE_AFTER_PROCESS", generate_actions_code(mactions, mbefore_action, mafter_action,mcompaction, mrules));
-   replace(temp, "TEMPLATE_CORE_POSITION", generate_rules(mrules, materm_val, maction_table_x_str) +
-           generate_action_table(mclosures.size(), materm_val.size(),maction_type, maction_id)+
-           generate_middle_action(mmiddle_action_len, mmiddle_action_state, mactions ) + last_code );
+   std::string action_codes = generate_actions_code(mactions, mbefore_action, mafter_action,mcompaction, mrules,nterms);
+   replace(temp, "BEFORE_AFTER_PROCESS", action_codes);
+
+   std::string core_codes = generate_rules(mrules, materm_val, maction_table_x_str);
+   core_codes=core_codes+generate_action_table(mclosures.size(), materm_val.size(),maction_type, maction_id);
+   core_codes=core_codes+generate_middle_action(mmiddle_action_len, mmiddle_action_state, mactions );
+   core_codes=core_codes+ last_code ;
+
+   replace(temp, "TEMPLATE_CORE_POSITION", core_codes);
 
 
    return temp;
@@ -394,23 +401,52 @@ public:
    std::string bison_sample1::generate_one_action_code(std::string func_name,
                                                        const std::map<int, int> &mbefore_action,
                                                        const std::vector< std::vector<std::string > > &mrules,
-                                                       const std::vector<std::string > &mactions)
+                                                       const std::vector<std::string > &mactions,
+                                                       std::vector<std::string> &nterms)
    {
+       ///TODO: 添加已用变量 auto ll lr0 lr1 lr... sl sr0 sr1 sr2... sr... 分别代表
+       /// 词法分析的左端，右边第0个，第一个。。。 语法分析的左端，右端第0个，第1个。。。
        std::stringstream ss;
 
 
        ss<<"int "<<func_name<<"(lex_token_type &tk, syntax_taken_type &stk)\n{\n";
 
+       ss<<"auto &ll=tk;\n";
+       ss<<"auto &lr = tk.m_children;\n";
+//       ss<<"for(int i=0;i<tk.m_children.size();++i)\n";
+//       ss<<""
+
+
+
        ss<<"switch(tk.m_rule_index)\n{\n";
        for( auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
        {
            ss<<"case "<<it->first<<"://";
+           //添加注释
            for(unsigned ri =0;ri<mrules[it->first].size();++ri)
            {
                ss<< mrules[it->first][ri];
                if(ri==0){ss<<"->" ;}else{ss<<" ";}
            }
            ss    <<"\n";
+
+           ///此处添加大括号，方便放入新定义的变量
+           ss<<"{\n";
+           ss<<"auto &sl=stk."<<mrules[it->first][0]  <<";\n";
+           ss<<"auto &sr=stk.m_children;\n";
+
+           for(unsigned ri =1;ri<mrules[it->first].size();++ri)
+           {
+               if(std::find(nterms.begin(), nterms.end(), mrules[it->first][ri])!=nterms.end()){
+                   ss<<"auto &sr"<<ri-1<<"=stk.m_children["<<ri-1<< "]."<< mrules[it->first][ri]<<";\n";
+               }
+           }
+           for(unsigned ri =1;ri<mrules[it->first].size();++ri)
+           {
+               ss<<"auto &lr"<<ri-1<<"=tk.m_children["<<ri-1<< "];\n";
+           }
+
+
            std::string action_str = mactions[it->second];
            replace(action_str, "$1", "tk.m_children[0]");
            replace(action_str, "$2", "tk.m_children[1]");
@@ -426,6 +462,7 @@ public:
 
 
            ss<<action_str<<"\n";
+           ss<<"\n}\n";
            ss<<"\nbreak;\n";
        }
        ss<<"default:\n";
@@ -441,15 +478,17 @@ public:
 
 
 std::string bison_sample1::generate_actions_code(const std::vector<std::string > &mactions,
-                                                 const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action,
+                                                 const std::map<int, int> &mbefore_action,
+                                                 const std::map<int, int> &mafter_action,
                                                  const std::map<int, int> &mcompaction,
-                                                 const std::vector< std::vector<std::string > > &mrules)
+                                                 const std::vector< std::vector<std::string > > &mrules,
+                                                 std::vector<std::string> &nterms)
 {
     std::stringstream ss;
 
-    ss<<generate_one_action_code("before_process_children",mbefore_action, mrules, mactions);
-    ss<<generate_one_action_code("after_process_children",mafter_action, mrules, mactions);
-    ss<<generate_one_action_code("comp_process_children",mcompaction, mrules, mactions);
+    ss<<generate_one_action_code("before_process_children",mbefore_action, mrules, mactions,nterms);
+    ss<<generate_one_action_code("after_process_children",mafter_action, mrules, mactions,nterms);
+    ss<<generate_one_action_code("comp_process_children",mcompaction, mrules, mactions,nterms);
 
 
     return ss.str();

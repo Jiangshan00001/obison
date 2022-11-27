@@ -283,140 +283,357 @@ private:
 
        for(unsigned i=0;i<tk.m_children.size();++i)
        {
-           process_one_token(tk.m_children[i], stk, depth+1);
+           process_one_token(tk.m_children[i], stk.m_children[i], depth+1);
        }
        after_process_children(tk, stk);
    }
 
    int before_process_children(lex_token_type &tk, syntax_taken_type &stk)
 {
+auto &ll=tk;
+auto &lr = tk.m_children;
 switch(tk.m_rule_index)
 {
 case 0://start_20220422_start->spec EOF_20220422_EOF 
+{
+auto &sl=stk.start_20220422_start;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].spec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 1://spec->defs MARK rules tail 
+{
+auto &sl=stk.spec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr2=stk.m_children[2].rules;
+auto &sr3=stk.m_children[3].tail;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 2://tail->MARK FAKE_FINISH_MARK 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 { }
+
+}
 
 break;
 case 3://tail->EPS_20220422_EPS 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 4://defs->EPS_20220422_EPS 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 5://defs->defs def 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr1=stk.m_children[1].def;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 6://def->START IDENTIFIER 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {m_file.m_start = tk.m_children[1].m_yytext;}
+
+}
 
 break;
 case 7://def->UNION '{' '}' 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 8://def->LCURL RCURL 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 9://def->rword tag nlist 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rword;
+auto &sr1=stk.m_children[1].tag;
+auto &sr2=stk.m_children[2].nlist;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {m_file.m_curr_rword.clear();}
+
+}
 
 break;
 case 10://rword->TOKEN 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 11://rword->LEFT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 12://rword->RIGHT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 13://rword->NONASSOC 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 14://rword->TYPE 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 15://tag->EPS_20220422_EPS 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 16://tag->'<' IDENTIFIER '>' 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 17://nlist->nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nmno;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 18://nlist->nlist nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nlist;
+auto &sr1=stk.m_children[1].nmno;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 19://nmno->IDENTIFIER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {m_file.m_curr_rword.push_back(tk.m_children[0].m_yytext);}
+
+}
 
 break;
 case 20://nmno->IDENTIFIER NUMBER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 21://rules->rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rule;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 22://rules->rules rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rules;
+auto &sr1=stk.m_children[1].rule;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {m_file.m_curr_rule.clear(); m_file.m_curr_rule_is_action.clear();}
+
+}
 
 break;
 case 23://r_head->IDENTIFIER ':' 
 {
-                            m_file.m_curr_rule.clear();
-                            m_file.m_curr_rule_is_action.clear();
-                            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
-                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-                            m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
-                            m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+{}
 
-                            m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
-                            m_file.m_curr_rule_is_action.push_back(0);
-                        }
+}
 
 break;
-case 24://r_head->IDENTIFIER '{' '}' 
+case 24://r_head->IDENTIFIER '{' '}' ':' 
+{
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 25://rule->rulemulti prec 
+{
+auto &sl=stk.rule;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 26://rulemulti->rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulesingleline;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 27://rulemulti->rulemulti rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].rulesingleline;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 28://rulesingleline->r_head rbody 
 {
-            m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].r_head;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+{
+             if (tk.m_children[0].m_children.size()<=2)
+             {
+                 m_file.m_curr_rule_left = tk.m_children[0].m_yytext;
+             }
+             else
+             {
+                 m_file.m_curr_rule_left = tk.m_children[0].m_children[0].m_yytext;
+             }
             m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
             m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
             m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
@@ -425,52 +642,138 @@ case 28://rulesingleline->r_head rbody
             m_file.m_curr_rule_is_action.push_back(0);
             }
 
+}
+
 break;
 case 29://rulesingleline->'|' rbody 
+{
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {
                     m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
                     m_file.m_curr_rule_is_action.push_back(0);
                     }
 
+}
+
 break;
 case 30://rbody->EPS_20220422_EPS 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 31://rbody->rbody IDENTIFIER 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 32://rbody->rbody acts 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &sr1=stk.m_children[1].acts;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 33://rbody->rbody '<' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 34://rbody->rbody '>' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 35://acts->act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].act;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 36://acts->acts act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].acts;
+auto &sr1=stk.m_children[1].act;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 37://act->'{' '}' 
+{
+auto &sl=stk.act;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 38://prec->';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 39://prec->prec ';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 default:
@@ -481,45 +784,126 @@ return 0;
 }
 int after_process_children(lex_token_type &tk, syntax_taken_type &stk)
 {
+auto &ll=tk;
+auto &lr = tk.m_children;
 switch(tk.m_rule_index)
 {
 case 0://start_20220422_start->spec EOF_20220422_EOF 
+{
+auto &sl=stk.start_20220422_start;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].spec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 1://spec->defs MARK rules tail 
+{
+auto &sl=stk.spec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr2=stk.m_children[2].rules;
+auto &sr3=stk.m_children[3].tail;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 2://tail->MARK FAKE_FINISH_MARK 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 3://tail->EPS_20220422_EPS 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 4://defs->EPS_20220422_EPS 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 5://defs->defs def 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr1=stk.m_children[1].def;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 6://def->START IDENTIFIER 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 7://def->UNION '{' '}' 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 8://def->LCURL RCURL 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 9://def->rword tag nlist 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rword;
+auto &sr1=stk.m_children[1].tag;
+auto &sr2=stk.m_children[2].nlist;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {
                                     std::vector<std::string> def_tks;
                                     def_tks.push_back(tk.m_children[0].m_yytext);
@@ -534,80 +918,219 @@ case 9://def->rword tag nlist
                                     m_file.m_curr_rword.clear();
                                 }
 
+}
+
 break;
 case 10://rword->TOKEN 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 11://rword->LEFT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 12://rword->RIGHT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 13://rword->NONASSOC 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 14://rword->TYPE 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 15://tag->EPS_20220422_EPS 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 16://tag->'<' IDENTIFIER '>' 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 17://nlist->nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nmno;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 18://nlist->nlist nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nlist;
+auto &sr1=stk.m_children[1].nmno;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 19://nmno->IDENTIFIER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 20://nmno->IDENTIFIER NUMBER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 21://rules->rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rule;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 22://rules->rules rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rules;
+auto &sr1=stk.m_children[1].rule;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 23://r_head->IDENTIFIER ':' 
+{
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
 
+}
+
 break;
-case 24://r_head->IDENTIFIER '{' '}' 
+case 24://r_head->IDENTIFIER '{' '}' ':' 
+{
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 25://rule->rulemulti prec 
+{
+auto &sl=stk.rule;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 26://rulemulti->rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulesingleline;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 27://rulemulti->rulemulti rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].rulesingleline;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 28://rulesingleline->r_head rbody 
+{
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].r_head;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {
                     m_file.m_rules.push_back(m_file.m_curr_rule);
                     m_file.m_is_action.push_back(m_file.m_curr_rule_is_action);
@@ -616,8 +1139,16 @@ case 28://rulesingleline->r_head rbody
                     m_file.m_curr_rule_is_action.clear();
                 }
 
+}
+
 break;
 case 29://rulesingleline->'|' rbody 
+{
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {
                         m_file.m_rules.push_back(m_file.m_curr_rule);
                         m_file.m_is_action.push_back(m_file.m_curr_rule_is_action);
@@ -626,19 +1157,42 @@ case 29://rulesingleline->'|' rbody
                         m_file.m_curr_rule_is_action.clear();
                     }
 
+}
+
 break;
 case 30://rbody->EPS_20220422_EPS 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 31://rbody->rbody IDENTIFIER 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {
                                 m_file.m_curr_rule.push_back(tk.m_children[1].m_yytext);
                                 m_file.m_curr_rule_is_action.push_back(0);
                             }
 
+}
+
 break;
 case 32://rbody->rbody acts 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &sr1=stk.m_children[1].acts;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {
                                 unpack_acts(m_file.m_curr_rule, tk.m_children[1]);
                                 while(m_file.m_curr_rule_is_action.size()<m_file.m_curr_rule.size())
@@ -647,33 +1201,88 @@ case 32://rbody->rbody acts
                                 }
                         }
 
+}
+
 break;
 case 33://rbody->rbody '<' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 34://rbody->rbody '>' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 35://acts->act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].act;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 36://acts->acts act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].acts;
+auto &sr1=stk.m_children[1].act;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 37://act->'{' '}' 
+{
+auto &sl=stk.act;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 38://prec->';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 39://prec->prec ';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 default:
@@ -684,166 +1293,472 @@ return 0;
 }
 int comp_process_children(lex_token_type &tk, syntax_taken_type &stk)
 {
+auto &ll=tk;
+auto &lr = tk.m_children;
 switch(tk.m_rule_index)
 {
 case 0://start_20220422_start->spec EOF_20220422_EOF 
+{
+auto &sl=stk.start_20220422_start;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].spec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 1://spec->defs MARK rules tail 
+{
+auto &sl=stk.spec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr2=stk.m_children[2].rules;
+auto &sr3=stk.m_children[3].tail;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 2://tail->MARK FAKE_FINISH_MARK 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 3://tail->EPS_20220422_EPS 
+{
+auto &sl=stk.tail;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 4://defs->EPS_20220422_EPS 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 5://defs->defs def 
+{
+auto &sl=stk.defs;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].defs;
+auto &sr1=stk.m_children[1].def;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 6://def->START IDENTIFIER 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 7://def->UNION '{' '}' 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 8://def->LCURL RCURL 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 9://def->rword tag nlist 
+{
+auto &sl=stk.def;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rword;
+auto &sr1=stk.m_children[1].tag;
+auto &sr2=stk.m_children[2].nlist;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 10://rword->TOKEN 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 11://rword->LEFT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 12://rword->RIGHT 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 13://rword->NONASSOC 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 14://rword->TYPE 
+{
+auto &sl=stk.rword;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 15://tag->EPS_20220422_EPS 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 16://tag->'<' IDENTIFIER '>' 
+{
+auto &sl=stk.tag;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
 {}
+
+}
 
 break;
 case 17://nlist->nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nmno;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 18://nlist->nlist nmno 
+{
+auto &sl=stk.nlist;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].nlist;
+auto &sr1=stk.m_children[1].nmno;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 19://nmno->IDENTIFIER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 20://nmno->IDENTIFIER NUMBER 
+{
+auto &sl=stk.nmno;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 21://rules->rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rule;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 22://rules->rules rule 
+{
+auto &sl=stk.rules;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rules;
+auto &sr1=stk.m_children[1].rule;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 23://r_head->IDENTIFIER ':' 
+{
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
 
+}
+
 break;
-case 24://r_head->IDENTIFIER '{' '}' 
+case 24://r_head->IDENTIFIER '{' '}' ':' 
+{
+auto &sl=stk.r_head;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
+auto &lr2=tk.m_children[2];
+auto &lr3=tk.m_children[3];
 {}
+
+}
 
 break;
 case 25://rule->rulemulti prec 
+{
+auto &sl=stk.rule;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 26://rulemulti->rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulesingleline;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 27://rulemulti->rulemulti rulesingleline 
+{
+auto &sl=stk.rulemulti;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rulemulti;
+auto &sr1=stk.m_children[1].rulesingleline;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 28://rulesingleline->r_head rbody 
+{
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].r_head;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 29://rulesingleline->'|' rbody 
+{
+auto &sl=stk.rulesingleline;
+auto &sr=stk.m_children;
+auto &sr1=stk.m_children[1].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 30://rbody->EPS_20220422_EPS 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 31://rbody->rbody IDENTIFIER 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 32://rbody->rbody acts 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &sr1=stk.m_children[1].acts;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 33://rbody->rbody '<' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 34://rbody->rbody '>' 
+{
+auto &sl=stk.rbody;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].rbody;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 35://acts->act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].act;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 36://acts->acts act 
+{
+auto &sl=stk.acts;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].acts;
+auto &sr1=stk.m_children[1].act;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 37://act->'{' '}' 
+{
+auto &sl=stk.act;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 case 38://prec->';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &lr0=tk.m_children[0];
 {}
+
+}
 
 break;
 case 39://prec->prec ';' 
+{
+auto &sl=stk.prec;
+auto &sr=stk.m_children;
+auto &sr0=stk.m_children[0].prec;
+auto &lr0=tk.m_children[0];
+auto &lr1=tk.m_children[1];
 {}
+
+}
 
 break;
 default:
@@ -895,7 +1810,7 @@ public:
 {"rules","rule"},
 {"rules","rules","rule"},
 {"r_head","IDENTIFIER","':'"},
-{"r_head","IDENTIFIER","'{'","'}'"},
+{"r_head","IDENTIFIER","'{'","'}'","':'"},
 {"rule","rulemulti","prec"},
 {"rulemulti","rulesingleline"},
 {"rulemulti","rulemulti","rulesingleline"},
@@ -964,7 +1879,7 @@ std::map<int, int>  m_token_index={
 };
 
 
-int m_action_id[56][41]={
+int m_action_id[57][41]={
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,4 ,-1 ,4 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,4 ,1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,2 ,-1 ,-1 ,-1 },
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,4 ,7 ,6 ,9 ,10 ,8 ,11 ,5 ,-1 ,3 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,12 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,13 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,14 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
@@ -1013,7 +1928,7 @@ int m_action_id[56][41]={
 {-1 ,31 ,31 ,31 ,31 ,31 ,-1 ,31 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,31 ,-1 ,-1 ,-1 ,-1 ,31 ,-1 ,-1 ,-1 ,-1 ,-1 ,31 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,35 ,35 ,35 ,35 ,35 ,-1 ,35 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,35 ,35 ,-1 ,-1 ,-1 ,-1 ,35 ,-1 ,-1 ,-1 ,-1 ,-1 ,35 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,32 ,32 ,32 ,44 ,32 ,-1 ,32 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,55 ,32 ,-1 ,-1 ,-1 ,-1 ,32 ,-1 ,-1 ,-1 ,-1 ,-1 ,32 ,-1 ,-1 ,-1 ,-1 ,-1 },
-{-1 ,24 ,24 ,24 ,24 ,24 ,-1 ,24 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,24 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
+{56 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,39 ,-1 ,-1 ,-1 ,39 ,-1 ,39 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,39 ,-1 ,-1 ,-1 ,39 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,39 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,39 },
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,2 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,16 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,16 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
@@ -1021,8 +1936,9 @@ int m_action_id[56][41]={
 {-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,18 ,-1 ,18 ,18 ,18 ,18 ,18 ,18 ,18 ,18 ,-1 ,18 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,18 ,-1 ,-1 ,18 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,37 ,37 ,37 ,37 ,37 ,-1 ,37 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,37 ,37 ,-1 ,-1 ,-1 ,-1 ,37 ,-1 ,-1 ,-1 ,-1 ,-1 ,37 ,-1 ,-1 ,-1 ,-1 ,-1 },
 {-1 ,36 ,36 ,36 ,36 ,36 ,-1 ,36 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,36 ,36 ,-1 ,-1 ,-1 ,-1 ,36 ,-1 ,-1 ,-1 ,-1 ,-1 ,36 ,-1 ,-1 ,-1 ,-1 ,-1 },
+{-1 ,24 ,24 ,24 ,24 ,24 ,-1 ,24 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,24 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 ,-1 },
 };
-int m_action_type[56][41]={
+int m_action_type[57][41]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 },
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,1 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 },
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
@@ -1071,7 +1987,7 @@ int m_action_type[56][41]={
 {0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 },
 {0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,2 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 },
 {0 ,2 ,2 ,2 ,1 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,1 ,2 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 },
-{0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
+{1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
 {0 ,2 ,0 ,0 ,0 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 },
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
@@ -1079,6 +1995,7 @@ int m_action_type[56][41]={
 {0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
 {0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,2 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 },
 {0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,2 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 },
+{0 ,2 ,2 ,2 ,2 ,2 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 },
 };
 
 lex_token_type action_in_middle(int state_id, const std::deque<lex_token_type> token_stack)
@@ -1165,20 +2082,9 @@ case 29:
 std::vector<lex_token_type> v;
 v.assign(token_stack.end()-2, token_stack.end());
 {
-
-                        m_file.m_curr_rule.clear();
-                        m_file.m_curr_rule_is_action.clear();
-                        m_file.m_curr_rule_left = v[0].m_yytext;
-                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-                        m_file.m_curr_rule_left = trim1(m_file.m_curr_rule_left,':');
-                        m_file.m_curr_rule_left = trim(m_file.m_curr_rule_left);
-
-                        m_file.m_curr_rule.push_back(m_file.m_curr_rule_left);
-                        m_file.m_curr_rule_is_action.push_back(0);
-
                         /* Copy action, translate _tk, and so on. */
                           std::string curr_act = get_one_action();
-                        m_file.m_nterm_class_var[m_file.m_curr_rule_left] = curr_act;
+                        m_file.m_nterm_class_var[v[0].m_yytext] = curr_act;
                         lex_token_type tk("act", curr_act);
                         _tk=tk;
                         _tk.m_ret='}';//add RCURL to stack???

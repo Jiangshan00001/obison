@@ -118,7 +118,8 @@ int main(int argc, char* argv[])
                                                 m_lalr1.m_action_table_x_str, m_lalr1.m_middle_action_len,
                                                 m_lalr1.m_middle_action_state, m_lalr1.m_before_action, m_lalr1.m_after_action,
                                                 m_lalr1.m_comp_action,def_namespace,
-                                                btaken_file,btaken_class_name);
+                                                btaken_file,btaken_class_name,
+                                                m_lalr1.m_nterms);
 
         ofile.open(parser_file);
         ofile<<ret;
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
 
         btoken_gen(btaken_file, btaken_class_name,def_namespace,
                    m_bison.m_file.m_nterm_class_var, m_bison.m_file.m_default_class_var,
-                   m_lalr1.m_aterm_val);
+                   m_lalr1.m_nterms);
 
         exit(0);
 
