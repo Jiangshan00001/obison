@@ -338,7 +338,7 @@ private:
 
        for(unsigned i=0;i<tk.m_children.size();++i)
        {
-           process_one_token(tk.m_children[i], stk, depth+1);
+           process_one_token(tk.m_children[i], stk.m_children[i], depth+1);
        }
        after_process_children(tk, stk);
    }
