@@ -29,7 +29,7 @@ int btoken_gen(std::string btaken_file, std::string btaken_class_name, std::stri
     ret<<"class "<< btaken_class_name<<"\n{\n";
     for(auto i=nterm_class_var.begin();i!=nterm_class_var.end();++i)
     {
-        ret<<" BToken_"<< i->first<<" " << i->first;
+        ret<<" BToken_"<< i->first<<" " << i->first<<";\n";
     }
 
     ret<<"public:\nstd::vector<"<<btaken_class_name <<"> m_children;\n";

@@ -35,3 +35,4 @@ tmp/*
 *.bak
 vc_build/*
 build/*
+src/ofb/tmp/*
