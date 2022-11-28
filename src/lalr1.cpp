@@ -1,6 +1,6 @@
 ///http://jsmachines.sourceforge.net/machines/lr1.html
 ///
-
+#include <string.h>
 #include <assert.h>
 #include <algorithm>
 #include <sstream>
@@ -87,8 +87,6 @@ int lalr1::generate_table(OBisonFile *file_in)
 
     calc_action_table();
     calc_middle_action_code();
-
-
 
     return 0;
 }
@@ -654,9 +652,9 @@ int lalr1::generate_closures(std::string mstart)
         ///如果已经处理过，则jmptable中已经有，则不再处理
         if(m_jmp.size()>i)continue;
         std::map<std::string, int > jmp_table;
-
         std::map<std::string, Closure > shift_jmp;
         std::map<std::string, std::vector<int> > reduce_jmp;
+
         int ret = get_closure_next_token(onec,shift_jmp, reduce_jmp);
         ///shift 表，可能有不存在的closure,所以需要创建
         for(auto it=shift_jmp.begin();it!=shift_jmp.end();++it)
@@ -781,7 +779,7 @@ int lalr1::calc_skip_token()
 }
 
 
-bool lalr1::is_term(string mm)
+bool lalr1::is_term(const string &mm)
 {
     if(std::find(m_terms.begin(), m_terms.end(), mm)==m_terms.end())
     {
@@ -790,7 +788,7 @@ bool lalr1::is_term(string mm)
     return true;
 }
 
-bool lalr1::is_nterm(string mm)
+bool lalr1::is_nterm(const string &mm)
 {
     if(std::find(m_nterms.begin(), m_nterms.end(), mm)==m_nterms.end())
     {
@@ -800,7 +798,7 @@ bool lalr1::is_nterm(string mm)
 
 }
 
-bool lalr1::is_aterm(string mm)
+bool lalr1::is_aterm(const string &mm)
 {
     if(m_aterm_val.find(mm)!=m_aterm_val.end())
     {
@@ -817,12 +815,17 @@ int lalr1::add_one_production_to(std::string &next_tk, std::string &nn_tk, std::
     /// 如果不存在，则添加，返回1
 
     int need_loop_next = 0;
-    for(unsigned i=0;i<this->m_rules.size();++i)
-    {
-        if(this->m_rules[i][0]!=next_tk)
-            continue;
 
-        min_state stnew;
+    unsigned siz = this->m_rules.size();
+    //to_insert.reserve(to_insert.size()+1000);
+    min_state stnew;
+    for(unsigned i=0;i<siz;++i)
+    {
+        if(strcmp(this->m_rules[i][0].c_str(),next_tk.c_str())!=0)
+            continue;
+        //if(this->m_rules[i][0]!=next_tk)
+        //    continue;
+
         stnew.m_rule = (int)i;
         stnew.m_curr_dot_index = 0;
         stnew.m_next = nn_tk;
@@ -1164,7 +1167,7 @@ int lalr1::get_closure_next_token(const Closure &cstate,
         {
             ///shift
             /// 将下一个token放入，指向一个新的closure
-            std::string tk = curr_rule[it->m_curr_dot_index+1];
+            const std::string &tk = curr_rule[it->m_curr_dot_index+1];
 
             //生产新的状态
             Closure &nclosure = shift_jmp[tk] ;

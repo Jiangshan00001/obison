@@ -29,7 +29,7 @@ private:
     std::string generate_one_action_code(std::string func_name,
                                          const std::map<int, int> &mbefore_action,
                                          const std::vector< std::vector<std::string > > &mrules,
-                                         const std::vector<std::string > &mactions, std::vector<std::string> &nterms);
+                                         const std::vector<std::string > &mactions, std::vector<std::string> &nterms, int is_shortcut=0);
 
     std::string generate_actions_code(const std::vector<std::string> &mactions,
                                       const std::map<int, int> &mbefore_action, const std::map<int, int> &mafter_action, const std::map<int, int> &mcompaction,

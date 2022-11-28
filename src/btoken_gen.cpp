@@ -24,7 +24,7 @@ int btoken_gen(std::string btaken_file, std::string btaken_class_name, std::stri
     {
         ret<<"class BToken_"<< i->first<<"\n";
         ret<< i->second;
-        ret<<"\n";
+        ret<<";\n";
     }
     ret<<"//default class\n";
     for(auto i =nterms.begin();i!=nterms.end();++i)

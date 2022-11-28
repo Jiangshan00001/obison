@@ -402,7 +402,7 @@ public:
                                                        const std::map<int, int> &mbefore_action,
                                                        const std::vector< std::vector<std::string > > &mrules,
                                                        const std::vector<std::string > &mactions,
-                                                       std::vector<std::string> &nterms)
+                                                       std::vector<std::string> &nterms, int is_shortcut)
    {
        ///TODO: 添加已用变量 auto ll lr0 lr1 lr... sl sr0 sr1 sr2... sr... 分别代表
        /// 词法分析的左端，右边第0个，第一个。。。 语法分析的左端，右端第0个，第1个。。。
@@ -419,7 +419,7 @@ public:
 
 
        ss<<"switch(tk.m_rule_index)\n{\n";
-       for( auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
+       for(auto it=mbefore_action.begin();it!=mbefore_action.end();++it)
        {
            ss<<"case "<<it->first<<"://";
            //添加注释
@@ -435,16 +435,25 @@ public:
            ss<<"auto &sl=stk."<<mrules[it->first][0]  <<";\n";
            ss<<"auto &sr=stk.m_children;\n";
 
-           for(unsigned ri =1;ri<mrules[it->first].size();++ri)
+           if( is_shortcut)
            {
-               if(std::find(nterms.begin(), nterms.end(), mrules[it->first][ri])!=nterms.end()){
-                   ss<<"auto &sr"<<ri-1<<"=stk.m_children["<<ri-1<< "]."<< mrules[it->first][ri]<<";\n";
+               for(unsigned ri =1;ri<mrules[it->first].size();++ri)
+               {
+                   if(std::find(nterms.begin(), nterms.end(), mrules[it->first][ri])!=nterms.end()){
+                       ss<<"auto &sr"<<ri-1<<"=stk.m_children["<<ri-1<< "]."<< mrules[it->first][ri]<<";\n";
+                   }
+               }
+               for(unsigned ri =1;ri<mrules[it->first].size();++ri)
+               {
+                   if(EPS_SYM!=mrules[it->first][ri])
+                   //if(std::find(nterms.begin(), nterms.end(), mrules[it->first][ri])!=nterms.end())
+                   {
+                       //ss<<"if(tk.m_children.size()<="<<ri-1<<")continue;"
+                        ss<<"auto &lr"<<ri-1<<"=tk.m_children["<<ri-1<< "];\n";
+                   }
                }
            }
-           for(unsigned ri =1;ri<mrules[it->first].size();++ri)
-           {
-               ss<<"auto &lr"<<ri-1<<"=tk.m_children["<<ri-1<< "];\n";
-           }
+
 
 
            std::string action_str = mactions[it->second];
@@ -486,8 +495,8 @@ std::string bison_sample1::generate_actions_code(const std::vector<std::string >
 {
     std::stringstream ss;
 
-    ss<<generate_one_action_code("before_process_children",mbefore_action, mrules, mactions,nterms);
-    ss<<generate_one_action_code("after_process_children",mafter_action, mrules, mactions,nterms);
+    ss<<generate_one_action_code("before_process_children",mbefore_action, mrules, mactions,nterms,1);
+    ss<<generate_one_action_code("after_process_children",mafter_action, mrules, mactions,nterms,1);
     ss<<generate_one_action_code("comp_process_children",mcompaction, mrules, mactions,nterms);
 
 

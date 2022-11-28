@@ -172,11 +172,11 @@ private:
     std::string print_one_rule(int rule_index, int dot_index, std::string next_tk);
     std::string print_jmp_table();
     //判断是终结符
-    bool is_term(std::string mm);
+    bool is_term(const std::string &mm);
     ///判断是非终结符
-    bool is_nterm(std::string mm);
+    bool is_nterm(const std::string &mm);
     ///判断是终结符或非终结符
-    bool is_aterm(std::string mm);
+    bool is_aterm(const std::string &mm);
 
 
     Closure get_closure(Closure &cstate);
