@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
         //m_bison.m_file.print_all();
         std::cout<<"start process_top_down\n";
-        obison_sample<oflex_sample>::syntax_taken_type stk;
+        obison_sample<oflex_sample>::syntax_token_type stk;
 
         m_bison.process_top_down(parse_ret,stk);
 

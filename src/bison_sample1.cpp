@@ -108,7 +108,7 @@ public:
 
 
    typedef  typename LEX_C::token lex_token_type;
-   typedef class BTAKEN_CLASS_NAME syntax_taken_type;
+   typedef class BTAKEN_CLASS_NAME syntax_token_type;
 
    lex_token_type yyparse(){
        ///get token, parse the token with shift/reduce
@@ -281,10 +281,11 @@ public:
 
 
 private:
+   int m_reduce_index=1;
    lex_token_type reduce_match_call(std::deque<lex_token_type> &state_vec, int rule_index)
    {
        lex_token_type tk;
-       syntax_taken_type stk;
+        syntax_token_type stk;
        if(m_debug)
        {
            std::cout<<"match:\n";
@@ -305,9 +306,12 @@ private:
            tk.m_yytext = tk.m_yytext + " " + state_vec[i].m_yytext;
        }
 
+       ///此处添加新的token
        tk.m_ret=m_rule_reduce_ret[rule_index];
        tk.m_rule_index = rule_index;
        tk.m_typestr = m_rule_name[rule_index];
+       tk.m_reduce_index = m_reduce_index++;
+
        if(m_is_recoding)
        {
            tk.m_children.assign(state_vec.begin(), state_vec.end());
@@ -321,13 +325,69 @@ private:
    ///def actions before and after
    ///
 public:
-   int process_top_down(lex_token_type &tk, syntax_taken_type &stk)
+   int process_top_down(lex_token_type &tk, syntax_token_type &stk)
    {
-        process_one_token(tk, stk, 0);
+        process_one_token_top_down(tk, stk, 0);
         return 0;
    }
+
+  int resize_children(lex_token_type &tk, syntax_token_type &stk)
+   {
+        stk.m_children.resize(tk.m_children.size());
+        for(int i=0;i<tk.m_children.size();++i)
+        {
+            resize_children(tk.m_children[i], stk.m_children[i]);
+        }
+        return 0;
+   }
+
+   int resort_tk(lex_token_type &tk,syntax_token_type &stk,
+                std::map<int, lex_token_type*> &tk_list,
+                std::map<int, syntax_token_type*> &stk_list)
+    {
+       if(tk.m_reduce_index==0)return 0;
+        if(tk_list.find(tk.m_reduce_index)!=tk_list.end())
+        {
+            std::cerr<<"reduce index error. index="<< tk.m_reduce_index<<". "<< tk<<"...VS..." <<
+                      *tk_list[tk.m_reduce_index]<<"\n";
+
+        }
+       tk_list[tk.m_reduce_index] = &tk;
+       stk_list[tk.m_reduce_index] = &stk;
+
+        for(int i=0;i<tk.m_children.size();++i)
+        {
+            resort_tk(tk.m_children[i], stk.m_children[i], tk_list, stk_list);
+        }
+
+        return 0;
+    }
+
+
+   int process_down_top(lex_token_type &tk, syntax_token_type &stk)
+   {
+        /// 从底层到顶层。先将stk生成
+        ///
+        resize_children(tk, stk);
+        std::map<int, lex_token_type*> tk_list;
+        std::map<int, syntax_token_type*> stk_list;
+        resort_tk(tk,stk, tk_list, stk_list);
+        for(auto i=tk_list.begin();i!=tk_list.end();++i)
+        {
+          int k = i->first;
+          lex_token_type &tki=*i->second;
+          syntax_token_type &stki = * stk_list[k];
+          before_process_children(tki, stki);
+        }
+        return 0;
+   }
+
+
+
+
+
 private:
-   void process_one_token(lex_token_type &tk,syntax_taken_type &stk,  int depth=0)
+   void process_one_token_top_down(lex_token_type &tk,syntax_token_type &stk,  int depth=0)
    {
        stk.m_children.resize(tk.m_children.size());
        before_process_children(tk, stk);
@@ -340,7 +400,7 @@ private:
 
        for(unsigned i=0;i<tk.m_children.size();++i)
        {
-           process_one_token(tk.m_children[i], stk.m_children[i], depth+1);
+           process_one_token_top_down(tk.m_children[i], stk.m_children[i], depth+1);
        }
        after_process_children(tk, stk);
    }
@@ -409,7 +469,7 @@ public:
        std::stringstream ss;
 
 
-       ss<<"int "<<func_name<<"(lex_token_type &tk, syntax_taken_type &stk)\n{\n";
+       ss<<"int "<<func_name<<"(lex_token_type &tk, syntax_token_type &stk)\n{\n";
 
        ss<<"auto &ll=tk;\n";
        ss<<"auto &lr = tk.m_children;\n";
@@ -430,8 +490,16 @@ public:
            }
            ss    <<"\n";
 
+
+
            ///此处添加大括号，方便放入新定义的变量
            ss<<"{\n";
+
+           //ss<<"if(tk.m_children.size()<"<<mrules[it->first].size()-1<<")\n{\n";
+           //ss<<"tk.m_children.resize("<<mrules[it->first].size()-1<<");\n}\n";
+           //ss<<"if(stk.m_children.size()<"<<mrules[it->first].size()-1<<")\n{\n";
+           //ss<<"stk.m_children.resize("<<mrules[it->first].size()-1<<");\n}\n";
+
            ss<<"auto &sl=stk."<<mrules[it->first][0]  <<";\n";
            ss<<"auto &sr=stk.m_children;\n";
 
@@ -448,7 +516,6 @@ public:
                    if(EPS_SYM!=mrules[it->first][ri])
                    //if(std::find(nterms.begin(), nterms.end(), mrules[it->first][ri])!=nterms.end())
                    {
-                       //ss<<"if(tk.m_children.size()<="<<ri-1<<")continue;"
                         ss<<"auto &lr"<<ri-1<<"=tk.m_children["<<ri-1<< "];\n";
                    }
                }
